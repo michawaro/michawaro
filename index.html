@@ -274,21 +274,8 @@
   }
 
   // Remplace ou complète la logique existante :
-  async function saveTable() {
-    localStorage.setItem("michawaroData", JSON.stringify([...tbody.querySelectorAll('tr')].map(row => {
-      return {
-        id: row.querySelector('td a')?.href || "",
-        niveau: row.cells[1].textContent,
-        contenu: row.cells[2].textContent,
-        ressources: row.cells[3].innerHTML
-      };
-    })));
-    await saveToSupabase();
-  }
-
-  async function loadTable() {
-    await loadFromSupabase();
-  }
+async function saveTable() { await saveToSupabase(); }
+async function loadTable() { await loadFromSupabase(); }
 
   loadTable();
 </script>
@@ -299,6 +286,19 @@
   <h1>MICHAWARO</h1>
   <p>Apprendre, Enseigner, Partager</p>
 </header>
+
+<!-- À placer juste avant la balise <main> ou juste après <header> -->
+
+<div style="display:flex; align-items:center; gap:10px; justify-content:flex-end; margin: 10px 5vw 0 0;">
+  <input type="text" id="userId" value="michawaro4480" placeholder="Identifiant" 
+         style="padding:6px 10px; border-radius:6px; border:1px solid #ccc; font-family:inherit; font-size:1em; width:160px;">
+  <button id="connectBtn" style="background:#89d6e2; color:#fff; border:none; border-radius:6px; padding:7px 16px; font-weight:bold; cursor:pointer; font-family:inherit; font-size:1em;">
+    Connexion
+  </button>
+  <button id="saveBtn" style="background:#e84e9b; color:#fff; border:none; border-radius:6px; padding:7px 16px; font-weight:bold; cursor:pointer; font-family:inherit; font-size:1em;">
+    💾 Sauvegarder
+  </button>
+</div>
 
 <main>
   <table id="videoTable">
@@ -525,39 +525,17 @@ function addVideo() {
   document.getElementById('ressources').value = '';
 }
 
-function saveTable() {
-  const data = [...tbody.querySelectorAll('tr')].map(row => {
-    const videoLink = row.querySelector('td a')?.href || "";
-    return {
-      id: videoLink,
-      niveau: row.cells[1].textContent,
-      contenu: row.cells[2].textContent,
-      ressources: row.cells[3].innerHTML
-    };
-  });
-  localStorage.setItem("michawaroData", JSON.stringify(data));
-}
-
-function loadTable() {
-  const data = JSON.parse(localStorage.getItem("michawaroData") || "[]");
-  tbody.innerHTML = '';
-  data.forEach(item => insertRow(item.id, item.niveau, item.contenu, item.ressources));
-}
-
-document.addEventListener('paste', function(e) {
-  const target = e.target;
-  if (target.classList.contains('resource-title') || target.classList.contains('image-title')) {
-    e.preventDefault();
-    const text = (e.clipboardData || window.clipboardData).getData('text/plain');
-    document.execCommand('insertText', false, text);
-    setTimeout(() => {
-      target.style.color = 'black';
-    }, 10);
-  }
-});
-
 loadTable();
 tbody.addEventListener('focusout', saveTable);
+
+document.getElementById('connectBtn').onclick = async function() {
+  window.USER_ID = document.getElementById('userId').value.trim();
+  await loadFromSupabase();
+};
+
+document.getElementById('saveBtn').onclick = async function() {
+  await saveToSupabase();
+};
 </script>
 
 </body>
