@@ -229,7 +229,6 @@
 <script>
   const SUPABASE_URL = 'https://nfqaijeeozypkvkrxfwh.supabase.co'; // Remplace par ton URL
   const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5mcWFpamVlb3p5cGt2a3J4ZndoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI4NDAzMDUsImV4cCI6MjA2ODQxNjMwNX0.6z0kRlR_qUSxP_jPngOfF1mcNbiMZBS3RsategLrjxo'; // Clé publique (anonyme) — attention à la config RLS
-  const USER_ID = 'michawaro4480'; // utile pour verrouiller l'accès (RLS côté Supabase)
 
   const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
@@ -244,9 +243,11 @@
       };
     });
 
+    const userId = document.getElementById('userId').value.trim();
+
     const { error } = await supabase
       .from('videos')
-      .upsert({ id: USER_ID, content: data });
+      .upsert({ id: userId, content: data });
 
     if (error) {
       console.error('Erreur Supabase (save):', error.message);
@@ -255,10 +256,11 @@
   }
 
   async function loadFromSupabase() {
+    const userId = document.getElementById('userId').value.trim();
     const { data, error } = await supabase
       .from('videos')
       .select('content')
-      .eq('id', USER_ID)
+      .eq('id', userId)
       .single();
 
     if (error) {
@@ -529,7 +531,6 @@ loadTable();
 tbody.addEventListener('focusout', saveTable);
 
 document.getElementById('connectBtn').onclick = async function() {
-  window.USER_ID = document.getElementById('userId').value.trim();
   await loadFromSupabase();
 };
 
