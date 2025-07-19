@@ -325,6 +325,7 @@ async function loadTable() { await loadFromSupabase(); }
 </main>
 
 <script>
+const tbody = document.getElementById('tableBody');
 
 function getYouTubeId(url) {
   try {
@@ -506,46 +507,36 @@ function changeVideoUrl(el) {
   }
 }
 
-  document.addEventListener('DOMContentLoaded', function() {
-    const tbody = document.getElementById('tableBody');
+function addVideo() {
+  const url = document.getElementById('videoUrl').value.trim();
+  const niveau = document.getElementById('niveau').value.trim();
+  const contenu = document.getElementById('contenu').value.trim();
+  const ressources = document.getElementById('ressources').value.trim();
 
-    // Redéfinir addVideo pour utiliser le tbody local si besoin
-    window.addVideo = function() {
-      const url = document.getElementById('videoUrl').value.trim();
-      const niveau = document.getElementById('niveau').value.trim();
-      const contenu = document.getElementById('contenu').value.trim();
-      const ressources = document.getElementById('ressources').value.trim();
+  if (!getYouTubeId(url)) {
+    alert("URL YouTube invalide");
+    return;
+  }
 
-      if (!getYouTubeId(url)) {
-        alert("URL YouTube invalide");
-        return;
-      }
+  insertRow(url, niveau, contenu, ressources);
+  saveTable();
 
-      insertRow(url, niveau, contenu, ressources);
-      saveTable();
+  document.getElementById('videoUrl').value = '';
+  document.getElementById('niveau').value = '';
+  document.getElementById('contenu').value = '';
+  document.getElementById('ressources').value = '';
+}
 
-      document.getElementById('videoUrl').value = '';
-      document.getElementById('niveau').value = '';
-      document.getElementById('contenu').value = '';
-      document.getElementById('ressources').value = '';
-    };
+loadTable();
+tbody.addEventListener('focusout', saveTable);
 
-    // Charger les données au démarrage
-    loadTable();
+document.getElementById('connectBtn').onclick = async function() {
+  await loadFromSupabase();
+};
 
-    // Sauvegarder à chaque modification du tableau
-    tbody.addEventListener('focusout', saveTable);
-
-    // Bouton Connexion
-    document.getElementById('connectBtn').onclick = async function() {
-      await loadFromSupabase();
-    };
-
-    // Bouton Sauvegarder
-    document.getElementById('saveBtn').onclick = async function() {
-      await saveToSupabase();
-    };
-  });
+document.getElementById('saveBtn').onclick = async function() {
+  await saveToSupabase();
+};
 </script>
 
 </body>
