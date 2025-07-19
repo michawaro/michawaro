@@ -506,11 +506,9 @@ function changeVideoUrl(el) {
   }
 }
 
-  document.addEventListener('DOMContentLoaded', function() {
-    const tbody = document.getElementById('tableBody');
 
     // Redéfinir addVideo pour utiliser le tbody local si besoin
-    window.addVideo = function() {
+    function addVideo() {
       const url = document.getElementById('videoUrl').value.trim();
       const niveau = document.getElementById('niveau').value.trim();
       const contenu = document.getElementById('contenu').value.trim();
@@ -529,6 +527,9 @@ function changeVideoUrl(el) {
       document.getElementById('contenu').value = '';
       document.getElementById('ressources').value = '';
     };
+
+    document.addEventListener('DOMContentLoaded', function() {
+      const tbody = document.getElementById('tableBody');
 
     // Charger les données au démarrage
     loadTable();
