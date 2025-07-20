@@ -561,9 +561,11 @@
 
         const tdNiveau = document.createElement("td");
         tdNiveau.innerHTML = niveau;
+        tdNiveau.contentEditable = true;
 
         const tdContenu = document.createElement("td");
         tdContenu.innerHTML = contenu;
+        tdContenu.contentEditable = true;
 
         const tdRessources = document.createElement("td");
         const resourceContainer = document.createElement("div");
