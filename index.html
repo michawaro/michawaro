@@ -540,55 +540,98 @@
       </button>
     </div>
 
-    <!-- Cartouche de filtre Niveau -->
+    <!-- Cartouche de filtre Niveau + Contenu -->
     <div
       id="niveau-filter"
       style="
         background: #fff;
         border-radius: 12px;
         box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
-        padding: 14px 24px;
+        padding: 18px 28px;
         margin: 18px 5vw 10px 5vw;
         display: flex;
-        align-items: center;
-        gap: 18px;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
         font-family: inherit;
         font-size: 1.08em;
         color: #333;
         width: fit-content;
       "
     >
-      <span style="font-weight: bold; margin-right: 10px">Niveau :</span>
-      <label style="display: flex; align-items: center; gap: 4px">
-        <input
-          type="checkbox"
-          class="niveau-checkbox"
-          value="Lycée"
-          checked
-          style="accent-color: #e84e9b; width: 18px; height: 18px"
-        />
-        Lycée
-      </label>
-      <label style="display: flex; align-items: center; gap: 4px">
-        <input
-          type="checkbox"
-          class="niveau-checkbox"
-          value="Collège"
-          checked
-          style="accent-color: #89d6e2; width: 18px; height: 18px"
-        />
-        Collège
-      </label>
-      <label style="display: flex; align-items: center; gap: 4px">
-        <input
-          type="checkbox"
-          class="niveau-checkbox"
-          value="Enseignants"
-          checked
-          style="accent-color: #fce86e; width: 18px; height: 18px"
-        />
-        Enseignants
-      </label>
+      <div
+        style="
+          font-weight: bold;
+          font-size: 1.15em;
+          letter-spacing: 2px;
+          margin-bottom: 6px;
+        "
+      >
+        FILTRES
+      </div>
+      <div
+        style="
+          display: flex;
+          align-items: center;
+          gap: 18px;
+          margin-bottom: 2px;
+        "
+      >
+        <span style="font-weight: bold; margin-right: 10px">Niveau :</span>
+        <label style="display: flex; align-items: center; gap: 4px">
+          <input
+            type="checkbox"
+            class="niveau-checkbox"
+            value="Lycée"
+            checked
+            style="accent-color: #e84e9b; width: 18px; height: 18px"
+          />
+          Lycée
+        </label>
+        <label style="display: flex; align-items: center; gap: 4px">
+          <input
+            type="checkbox"
+            class="niveau-checkbox"
+            value="Collège"
+            checked
+            style="accent-color: #89d6e2; width: 18px; height: 18px"
+          />
+          Collège
+        </label>
+        <label style="display: flex; align-items: center; gap: 4px">
+          <input
+            type="checkbox"
+            class="niveau-checkbox"
+            value="Enseignants"
+            checked
+            style="accent-color: #fce86e; width: 18px; height: 18px"
+          />
+          Enseignants
+        </label>
+      </div>
+      <div style="display: flex; align-items: center; gap: 18px">
+        <span style="font-weight: bold; margin-right: 10px">Contenu :</span>
+        <label style="display: flex; align-items: center; gap: 4px">
+          <input
+            type="checkbox"
+            class="contenu-checkbox"
+            value="Méthodologie"
+            checked
+            style="accent-color: #e84e9b; width: 18px; height: 18px"
+          />
+          Méthodologie
+        </label>
+        <label style="display: flex; align-items: center; gap: 4px">
+          <input
+            type="checkbox"
+            class="contenu-checkbox"
+            value="Pédagogie"
+            checked
+            style="accent-color: #89d6e2; width: 18px; height: 18px"
+          />
+          Pédagogie
+        </label>
+      </div>
     </div>
 
     <main>
@@ -886,29 +929,55 @@
         await saveToSupabase();
       };
     </script>
-    <!-- --- FILTRE NIVEAU --- -->
+    <!-- --- FILTRE NIVEAU + CONTENU --- -->
     <script>
-      function filtrerParNiveau() {
-        const checkboxes = document.querySelectorAll(".niveau-checkbox");
-        const niveauxAffiches = Array.from(checkboxes)
+      function filtrerParNiveauEtContenu() {
+        // Niveaux
+        const checkboxesNiveau = document.querySelectorAll(".niveau-checkbox");
+        const niveauxAffiches = Array.from(checkboxesNiveau)
           .filter((cb) => cb.checked)
           .map((cb) => cb.value);
+        // Contenus
+        const checkboxesContenu =
+          document.querySelectorAll(".contenu-checkbox");
+        const contenusAffiches = Array.from(checkboxesContenu)
+          .filter((cb) => cb.checked)
+          .map((cb) => cb.value.toUpperCase());
         // Pour chaque ligne du tableau
         document.querySelectorAll("#tableBody tr").forEach((row) => {
           const niveauCell = row.cells[1];
-          if (!niveauCell) return;
+          const contenuCell = row.cells[2];
+          if (!niveauCell || !contenuCell) return;
           const niveauTexte = niveauCell.textContent || "";
-          // Si le niveau de la ligne est dans les niveaux cochés, on affiche, sinon on masque
-          const visible = niveauxAffiches.some((niv) =>
+          const contenuTexte = (contenuCell.textContent || "").toUpperCase();
+          // Filtrage Niveau
+          const visibleNiveau = niveauxAffiches.some((niv) =>
             niveauTexte.includes(niv)
           );
-          row.style.display = visible ? "" : "none";
+          // Filtrage Contenu
+          let visibleContenu = true;
+          if (contenusAffiches.length < 2) {
+            // Si une coche est décochée, on filtre
+            if (
+              !contenusAffiches.includes("MÉTHODOLOGIE") &&
+              contenuTexte.includes("MÉTHODOLOGIE")
+            )
+              visibleContenu = false;
+            if (
+              !contenusAffiches.includes("PÉDAGOGIE") &&
+              contenuTexte.includes("PÉDAGOGIE")
+            )
+              visibleContenu = false;
+          }
+          row.style.display = visibleNiveau && visibleContenu ? "" : "none";
         });
       }
-      document.querySelectorAll(".niveau-checkbox").forEach((cb) => {
-        cb.addEventListener("change", filtrerParNiveau);
-      });
-      document.addEventListener("DOMContentLoaded", filtrerParNiveau);
+      document
+        .querySelectorAll(".niveau-checkbox, .contenu-checkbox")
+        .forEach((cb) => {
+          cb.addEventListener("change", filtrerParNiveauEtContenu);
+        });
+      document.addEventListener("DOMContentLoaded", filtrerParNiveauEtContenu);
     </script>
   </body>
 </html>
