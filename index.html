@@ -480,64 +480,63 @@
       <p>Apprendre, Enseigner, Partager</p>
     </header>
 
-    <!-- À placer juste avant la balise <main> ou juste après <header> -->
+    <div class="form-container">
+      <input type="text" id="videoUrl" placeholder="URL de la vidéo YouTube" />
+      <input type="text" id="niveau" placeholder="Niveau" />
+      <input type="text" id="contenu" placeholder="Contenu" />
+      <input type="text" id="ressources" placeholder="Ressources" />
+      <button onclick="addVideo()">Ajouter la vidéo</button>
+    </div>
 
+    <!-- Cartouche de filtre Niveau -->
     <div
+      id="niveau-filter"
       style="
+        background: #fff;
+        border-radius: 12px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+        padding: 14px 24px;
+        margin: 18px 5vw 10px 5vw;
         display: flex;
         align-items: center;
-        gap: 10px;
-        justify-content: flex-end;
-        margin: 10px 5vw 0 0;
+        gap: 18px;
+        font-family: inherit;
+        font-size: 1.08em;
+        color: #333;
+        width: fit-content;
       "
     >
-      <input
-        type="text"
-        id="userId"
-        value="michawaro4480"
-        placeholder="Identifiant"
-        style="
-          padding: 6px 10px;
-          border-radius: 6px;
-          border: 1px solid #ccc;
-          font-family: inherit;
-          font-size: 1em;
-          width: 160px;
-          display: none;
-        "
-      />
-      <button
-        id="connectBtn"
-        style="
-          background: #89d6e2;
-          color: #fff;
-          border: none;
-          border-radius: 6px;
-          padding: 7px 16px;
-          font-weight: bold;
-          cursor: pointer;
-          font-family: inherit;
-          font-size: 1em;
-        "
-      >
-        Connexion
-      </button>
-      <button
-        id="saveBtn"
-        style="
-          background: #e84e9b;
-          color: #fff;
-          border: none;
-          border-radius: 6px;
-          padding: 7px 16px;
-          font-weight: bold;
-          cursor: pointer;
-          font-family: inherit;
-          font-size: 1em;
-        "
-      >
-        💾 Sauvegarder
-      </button>
+      <span style="font-weight: bold; margin-right: 10px">Niveau :</span>
+      <label style="display: flex; align-items: center; gap: 4px">
+        <input
+          type="checkbox"
+          class="niveau-checkbox"
+          value="Lycée"
+          checked
+          style="accent-color: #e84e9b; width: 18px; height: 18px"
+        />
+        Lycée
+      </label>
+      <label style="display: flex; align-items: center; gap: 4px">
+        <input
+          type="checkbox"
+          class="niveau-checkbox"
+          value="Collège"
+          checked
+          style="accent-color: #89d6e2; width: 18px; height: 18px"
+        />
+        Collège
+      </label>
+      <label style="display: flex; align-items: center; gap: 4px">
+        <input
+          type="checkbox"
+          class="niveau-checkbox"
+          value="Enseignants"
+          checked
+          style="accent-color: #fce86e; width: 18px; height: 18px"
+        />
+        Enseignants
+      </label>
     </div>
 
     <main>
@@ -552,18 +551,6 @@
         </thead>
         <tbody id="tableBody"></tbody>
       </table>
-
-      <div class="form-container">
-        <input
-          type="text"
-          id="videoUrl"
-          placeholder="URL de la vidéo YouTube"
-        />
-        <input type="text" id="niveau" placeholder="Niveau" />
-        <input type="text" id="contenu" placeholder="Contenu" />
-        <input type="text" id="ressources" placeholder="Ressources" />
-        <button onclick="addVideo()">Ajouter la vidéo</button>
-      </div>
     </main>
 
     <script>
@@ -792,6 +779,35 @@
         document.getElementById("niveau").value = "";
         document.getElementById("contenu").value = "";
         document.getElementById("ressources").value = "";
+      }
+
+      // --- FILTRE NIVEAU ---
+      function filtrerParNiveau() {
+        const checkboxes = document.querySelectorAll(".niveau-checkbox");
+        const niveauxAffiches = Array.from(checkboxes)
+          .filter((cb) => cb.checked)
+          .map((cb) => cb.value);
+        // Pour chaque ligne du tableau
+        tbody.querySelectorAll("tr").forEach((row) => {
+          const niveauCell = row.cells[1];
+          if (!niveauCell) return;
+          const niveauTexte = niveauCell.textContent || "";
+          // Si le niveau de la ligne est dans les niveaux cochés, on affiche, sinon on masque
+          const visible = niveauxAffiches.some((niv) =>
+            niveauTexte.includes(niv)
+          );
+          row.style.display = visible ? "" : "none";
+        });
+      }
+      // Ajout des écouteurs sur les cases à cocher
+      document.querySelectorAll(".niveau-checkbox").forEach((cb) => {
+        cb.addEventListener("change", filtrerParNiveau);
+      });
+      // Appel initial après chargement des données
+      document.addEventListener("DOMContentLoaded", filtrerParNiveau);
+      // Appel après chaque rechargement du tableau
+      function loadTable() {
+        loadFromSupabase().then(filtrerParNiveau);
       }
 
       loadTable();
