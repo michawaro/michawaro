@@ -724,7 +724,13 @@
               block.appendChild(delBtn);
               block.appendChild(img);
               block.appendChild(caption);
-              tdRessources.insertBefore(block, dropZone);
+              const resourceContainer = tdRessources.querySelector(
+                ".resource-container"
+              );
+              const dropZone = tdRessources.querySelector(".drop-zone");
+              if (resourceContainer && dropZone) {
+                resourceContainer.insertBefore(block, dropZone);
+              }
 
               saveTable();
             };
