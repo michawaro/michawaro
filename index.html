@@ -263,16 +263,47 @@
       const videosData = rows.map((row) => {
         const videoLink = row.querySelector("td a")?.href || "";
 
-        // Récupérer les données des ressources (titres + images)
+        // Récupérer les données des ressources et les convertir en JSON
         const ressourcesCell = row.cells[3];
-        const ressourcesHTML = ressourcesCell.innerHTML;
+        const resourceContainer = ressourcesCell.querySelector(
+          ".resource-container"
+        );
+
+        let ressourcesJSON = {
+          titre: "",
+          images: [],
+        };
+
+        if (resourceContainer) {
+          // Récupérer le titre principal
+          const titreElement =
+            resourceContainer.querySelector(".resource-title");
+          if (titreElement) {
+            ressourcesJSON.titre = titreElement.textContent || "";
+          }
+
+          // Récupérer les images et leurs titres
+          const imageBlocks =
+            resourceContainer.querySelectorAll(".resource-block");
+          imageBlocks.forEach((block) => {
+            const img = block.querySelector("img");
+            const caption = block.querySelector(".image-title");
+
+            if (img && caption) {
+              ressourcesJSON.images.push({
+                src: img.src, // Base64 de l'image
+                titre: caption.textContent || "",
+              });
+            }
+          });
+        }
 
         return {
           user_id: userId,
           video_url: videoLink,
           niveau: row.cells[1].textContent,
           contenu: row.cells[2].textContent,
-          ressources: ressourcesHTML, // Ajouter les ressources
+          ressources: ressourcesJSON, // Structure JSON
         };
       });
 
@@ -297,7 +328,7 @@
               .update({
                 niveau: videoData.niveau,
                 contenu: videoData.contenu,
-                ressources: videoData.ressources, // Mettre à jour les ressources
+                ressources: videoData.ressources, // Structure JSON
               })
               .eq("id", existingData.id);
 
@@ -358,12 +389,39 @@
 
       tbody.innerHTML = "";
       data.forEach((item) => {
-        // Utiliser les ressources sauvegardées ou créer une structure par défaut
-        const ressources =
-          item.ressources ||
+        // Convertir les ressources JSON en HTML
+        let ressourcesHTML =
           '<div class="resource-container"><div class="resource-title-wrapper"><div class="resource-title" contenteditable="true">Titre</div></div><div class="drop-zone"></div></div>';
 
-        insertRow(item.video_url, item.niveau, item.contenu, ressources);
+        if (item.ressources && typeof item.ressources === "object") {
+          // Reconstruire le HTML à partir des données JSON
+          ressourcesHTML = '<div class="resource-container">';
+
+          // Titre principal
+          if (item.ressources.titre) {
+            ressourcesHTML += `<div class="resource-title-wrapper"><div class="resource-title" contenteditable="true">${item.ressources.titre}</div></div>`;
+          } else {
+            ressourcesHTML +=
+              '<div class="resource-title-wrapper"><div class="resource-title" contenteditable="true">Titre</div></div>';
+          }
+
+          // Images
+          if (item.ressources.images && item.ressources.images.length > 0) {
+            item.ressources.images.forEach((image) => {
+              ressourcesHTML += `
+                <div class="resource-block">
+                  <button class="delete-btn" onclick="this.parentElement.remove(); saveTable();">❌</button>
+                  <img src="${image.src}" class="resource-img" alt="Ressource">
+                  <div class="image-title" contenteditable="true">${image.titre}</div>
+                </div>
+              `;
+            });
+          }
+
+          ressourcesHTML += '<div class="drop-zone"></div></div>';
+        }
+
+        insertRow(item.video_url, item.niveau, item.contenu, ressourcesHTML);
       });
     }
 
@@ -625,7 +683,7 @@
               const caption = document.createElement("div");
               caption.className = "image-title";
               caption.contentEditable = true;
-              caption.textContent = "Titre de l’image";
+              caption.textContent = "Titre de l'image";
 
               block.appendChild(delBtn);
               block.appendChild(img);
@@ -634,7 +692,7 @@
 
               saveTable();
             };
-            reader.readAsDataURL(file);
+            reader.readAsDataURL(file); // Convertit automatiquement en Base64
           });
         });
       }
