@@ -239,46 +239,115 @@
     const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
     async function saveToSupabase() {
-      const data = [...tbody.querySelectorAll("tr")].map((row) => {
+      const userIdElement = document.getElementById("userId");
+      if (!userIdElement) {
+        console.warn("Élément userId non trouvé");
+        return;
+      }
+
+      const userId = userIdElement.value.trim();
+
+      // Récupérer toutes les lignes de la table
+      const rows = [...tbody.querySelectorAll("tr")];
+
+      // Préparer les nouvelles données
+      const videosData = rows.map((row) => {
         const videoLink = row.querySelector("td a")?.href || "";
         return {
-          id: videoLink,
+          user_id: userId,
+          video_url: videoLink,
           niveau: row.cells[1].textContent,
           contenu: row.cells[2].textContent,
-          ressources: row.cells[3].innerHTML,
         };
       });
 
-      const userId = document.getElementById("userId").value.trim();
+      // Sauvegarde incrémentale optimisée pour multi-supports
+      if (videosData.length > 0) {
+        let successCount = 0;
+        let errorCount = 0;
 
-      const { error } = await supabaseClient
-        .from("videos")
-        .upsert({ id: userId, content: data });
+        for (const videoData of videosData) {
+          // Vérifier si la vidéo existe déjà pour cet utilisateur
+          const { data: existingData } = await supabaseClient
+            .from("videos")
+            .select("id")
+            .eq("user_id", userId)
+            .eq("video_url", videoData.video_url)
+            .single();
 
-      if (error) {
-        console.error("Erreur Supabase (save):", error.message);
-        alert("Erreur lors de la sauvegarde !");
+          if (existingData) {
+            // Mettre à jour la vidéo existante
+            const { error: updateError } = await supabaseClient
+              .from("videos")
+              .update({
+                niveau: videoData.niveau,
+                contenu: videoData.contenu,
+              })
+              .eq("id", existingData.id);
+
+            if (updateError) {
+              console.error(
+                "Erreur lors de la mise à jour:",
+                updateError.message
+              );
+              errorCount++;
+            } else {
+              successCount++;
+            }
+          } else {
+            // Insérer une nouvelle vidéo
+            const { error: insertError } = await supabaseClient
+              .from("videos")
+              .insert(videoData);
+
+            if (insertError) {
+              console.error("Erreur lors de l'insertion:", insertError.message);
+              errorCount++;
+            } else {
+              successCount++;
+            }
+          }
+        }
+
+        if (errorCount > 0) {
+          console.warn(`${errorCount} erreurs lors de la sauvegarde`);
+        }
+
+        if (successCount > 0) {
+          console.log(`${successCount} vidéos sauvegardées avec succès`);
+        }
       }
     }
 
     async function loadFromSupabase() {
-      const userId = document.getElementById("userId").value.trim();
+      const userIdElement = document.getElementById("userId");
+      if (!userIdElement) {
+        console.warn("Élément userId non trouvé");
+        return;
+      }
+
+      const userId = userIdElement.value.trim();
+
+      // Charger les données pour cet utilisateur spécifique
       const { data, error } = await supabaseClient
         .from("videos")
-        .select("content")
-        .eq("id", userId)
-        .single();
+        .select("video_url, niveau, contenu")
+        .eq("user_id", userId)
+        .order("created_at", { ascending: true });
 
       if (error) {
         console.warn("Pas de données Supabase ou erreur :", error.message);
         return;
       }
 
-      const items = data.content || [];
       tbody.innerHTML = "";
-      items.forEach((item) =>
-        insertRow(item.id, item.niveau, item.contenu, item.ressources)
-      );
+      data.forEach((item) => {
+        // Créer une chaîne HTML pour les ressources (vide par défaut)
+        const ressources =
+          '<div class="resource-container"><div class="resource-title-wrapper"><div class="resource-title" contenteditable="true">Titre</div></div><div class="drop-zone">Glisser une ou plusieurs images ici</div></div>';
+
+        insertRow(item.video_url, item.niveau, item.contenu, ressources);
+      });
     }
 
     // Remplace ou complète la logique existante :
@@ -289,7 +358,10 @@
       await loadFromSupabase();
     }
 
-    loadTable();
+    // Attendre que le DOM soit chargé avant d'appeler loadTable
+    document.addEventListener("DOMContentLoaded", function () {
+      loadTable();
+    });
   </script>
 
   <body>
