@@ -280,7 +280,7 @@
           const titreElement =
             resourceContainer.querySelector(".resource-title");
           if (titreElement) {
-            ressourcesJSON.titre = titreElement.textContent || "";
+            ressourcesJSON.titre = titreElement.innerHTML || "";
           }
 
           // Récupérer les images et leurs titres
@@ -293,7 +293,7 @@
             if (img && caption) {
               ressourcesJSON.images.push({
                 src: img.src, // Base64 de l'image
-                titre: caption.textContent || "",
+                titre: caption.innerHTML || "",
               });
             }
           });
