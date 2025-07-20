@@ -1,106 +1,110 @@
 <!DOCTYPE html>
 <html lang="fr">
-<head>
-  <meta charset="UTF-8">
-  <title>Michawaro – Apprendre, Enseigner, Partager</title>
-  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600&display=swap" rel="stylesheet">
-  <style>
-    body {
-      margin: 0;
-      font-family: 'Fredoka', sans-serif;
-      background-color: #f5f5f5;
-      color: #333;
-    }
+  <head>
+    <meta charset="UTF-8" />
+    <title>Michawaro – Apprendre, Enseigner, Partager</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      body {
+        margin: 0;
+        font-family: "Fredoka", sans-serif;
+        background-color: #f5f5f5;
+        color: #333;
+      }
 
-    header {
-      background: linear-gradient(135deg, #e84e9b 40%, #89d6e2 100%);
-      color: white;
-      padding: 30px 10px;
-      text-align: center;
-    }
+      header {
+        background: linear-gradient(135deg, #e84e9b 40%, #89d6e2 100%);
+        color: white;
+        padding: 30px 10px;
+        text-align: center;
+      }
 
-    header h1 {
-      font-size: 2.8em;
-      margin: 0;
-      letter-spacing: 2px;
-    }
+      header h1 {
+        font-size: 2.8em;
+        margin: 0;
+        letter-spacing: 2px;
+      }
 
-    header p {
-      font-size: 1.2em;
-      margin-top: 10px;
-      color: #fce86e;
-    }
+      header p {
+        font-size: 1.2em;
+        margin-top: 10px;
+        color: #fce86e;
+      }
 
-    main {
-      padding: 30px 5vw;
-    }
+      main {
+        padding: 30px 5vw;
+      }
 
-    table {
-      width: 90vw;
-      border-collapse: collapse;
-      background: white;
-      border-radius: 12px;
-      overflow: hidden;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-      table-layout: fixed;
-    }
+      table {
+        width: 90vw;
+        border-collapse: collapse;
+        background: white;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        table-layout: fixed;
+      }
 
-    th, td {
-      padding: 12px;
-      border-bottom: 1px solid #eee;
-      text-align: center;
-      vertical-align: middle;
-      overflow-wrap: break-word;
-      resize: horizontal;
-      overflow: auto;
-    }
+      th,
+      td {
+        padding: 12px;
+        border-bottom: 1px solid #eee;
+        text-align: center;
+        vertical-align: middle;
+        overflow-wrap: break-word;
+        resize: horizontal;
+        overflow: auto;
+      }
 
-    th {
-      background-color: #89d6e2;
-      color: white;
-      user-select: none;
-    }
+      th {
+        background-color: #89d6e2;
+        color: white;
+        user-select: none;
+      }
 
-    td[contenteditable="true"] {
-      background-color: #fffdf5;
-    }
+      td[contenteditable="true"] {
+        background-color: #fffdf5;
+      }
 
-    tr:hover {
-      background-color: #fef0f7;
-    }
+      tr:hover {
+        background-color: #fef0f7;
+      }
 
-    .resource-container {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
-      align-items: flex-end; /* Aligne les titres verticalement par rapport au plus bas */
-      gap: 8px;
-      padding: 8px;
-      background: #fafafa;
-      border-radius: 6px;
-    }
+      .resource-container {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        align-items: flex-end; /* Aligne les titres verticalement par rapport au plus bas */
+        gap: 8px;
+        padding: 8px;
+        background: #fafafa;
+        border-radius: 6px;
+      }
 
-    .resource-block {
-      display: flex;
-    flex-direction: column;
-    align-items: center;
-    position: relative;
-    max-width: 140px;
-    background: #fff;
-    padding: 6px;
-    border: 1px solid #ccc;
-    border-radius: 6px;
-    transition: box-shadow 0.3s;
-     flex-grow: 1; /* Permet aux boîtes de s'étendre uniformément */
-    }
+      .resource-block {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        position: relative;
+        max-width: 140px;
+        background: #fff;
+        padding: 6px;
+        border: 1px solid #ccc;
+        border-radius: 6px;
+        transition: box-shadow 0.3s;
+        flex-grow: 1; /* Permet aux boîtes de s'étendre uniformément */
+      }
 
-    .resource-img {
-      max-width: 100%;
-      height: auto;
-      border-radius: 4px;
-    }
+      .resource-img {
+        max-width: 100%;
+        height: auto;
+        border-radius: 4px;
+      }
 
-    .delete-btn {
+      .delete-btn {
         position: absolute;
         top: 3px; /* Ajustement pour centrer verticalement */
         right: 3px; /* Ajustement pour centrer horizontalement */
@@ -118,19 +122,19 @@
         cursor: pointer;
         display: none; /* Caché par défaut */
         transition: background-color 0.3s, transform 0.2s;
-    }
+      }
 
-    .delete-btn:hover {
+      .delete-btn:hover {
         background: rgba(255, 255, 255, 1); /* Blanc vif au survol */
         color: darkred; /* Couleur de la croix au survol */
         transform: scale(1.1); /* Légère mise en avant au survol */
-    }
+      }
 
-    .resource-block:hover .delete-btn {
+      .resource-block:hover .delete-btn {
         display: flex; /* Affiché uniquement au survol de la ressource */
-    }
+      }
 
-    .resource-block {
+      .resource-block {
         position: relative;
         flex-direction: column;
         display: flex;
@@ -142,402 +146,457 @@
         border: 1px solid #ccc;
         border-radius: 6px;
         transition: box-shadow 0.3s;
-    }
+      }
 
-    .resource-block:hover {
+      .resource-block:hover {
         box-shadow: 0 0 10px rgba(0, 0, 0, 0.2); /* Effet visuel au survol */
-    }
+      }
 
-    .image-title {
-      margin-top: 6px;
-      font-size: 0.85em;
-      text-align: center;
-      outline: none;
-      width: 100%;
-      color: black;
-    }
+      .image-title {
+        margin-top: 6px;
+        font-size: 0.85em;
+        text-align: center;
+        outline: none;
+        width: 100%;
+        color: black;
+      }
 
-    .resource-title {
-      font-size: 0.9em;
-      font-weight: bold;
-      width: 100%;
-      text-align: center;
-      outline: none;
-      color: black;
-    }
-
-    .resource-title-wrapper {
-    width: 100%; /* Le titre occupe toute la largeur du conteneur */
-    text-align: center; /* Centre le texte du titre */
-    margin-bottom: 8px; /* Ajoute un espace entre le titre et les images */
-    position: relative; /* Nécessaire pour positionner la coche */
-    }
-
-    .drop-zone {
-      font-size: 0.85em;
-      color: #999;
-      width: 100%;
-      text-align: center;
-    }
-
-    .form-container {
-      margin-top: 30px;
-      background: #ffffff;
-      padding: 20px;
-      border-radius: 12px;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.08);
-    }
-
-    .form-container input {
-      padding: 10px;
-      margin-right: 10px;
-      margin-bottom: 10px;
-      border-radius: 8px;
-      border: 1px solid #ccc;
-      width: 18%;
-    }
-
-    .form-container button {
-      padding: 10px 20px;
-      border: none;
-      background-color: #e84e9b;
-      color: white;
-      font-weight: bold;
-      border-radius: 8px;
-      cursor: pointer;
-    }
-
-    .form-container button:hover {
-      background-color: #d13b88;
-    }
-
-    @media (max-width: 768px) {
-      td, th {
+      .resource-title {
         font-size: 0.9em;
-        padding: 8px;
+        font-weight: bold;
+        width: 100%;
+        text-align: center;
+        outline: none;
+        color: black;
+      }
+
+      .resource-title-wrapper {
+        width: 100%; /* Le titre occupe toute la largeur du conteneur */
+        text-align: center; /* Centre le texte du titre */
+        margin-bottom: 8px; /* Ajoute un espace entre le titre et les images */
+        position: relative; /* Nécessaire pour positionner la coche */
+      }
+
+      .drop-zone {
+        font-size: 0.85em;
+        color: #999;
+        width: 100%;
+        text-align: center;
+      }
+
+      .form-container {
+        margin-top: 30px;
+        background: #ffffff;
+        padding: 20px;
+        border-radius: 12px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
       }
 
       .form-container input {
-        width: 100%;
+        padding: 10px;
+        margin-right: 10px;
         margin-bottom: 10px;
+        border-radius: 8px;
+        border: 1px solid #ccc;
+        width: 18%;
+      }
+
+      .form-container button {
+        padding: 10px 20px;
+        border: none;
+        background-color: #e84e9b;
+        color: white;
+        font-weight: bold;
+        border-radius: 8px;
+        cursor: pointer;
+      }
+
+      .form-container button:hover {
+        background-color: #d13b88;
+      }
+
+      @media (max-width: 768px) {
+        td,
+        th {
+          font-size: 0.9em;
+          padding: 8px;
+        }
+
+        .form-container input {
+          width: 100%;
+          margin-bottom: 10px;
+        }
+      }
+    </style>
+  </head>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+  <script>
+    const SUPABASE_URL = "https://nfqaijeeozypkvkrxfwh.supabase.co"; // Remplace par ton URL
+    const SUPABASE_KEY =
+      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5mcWFpamVlb3p5cGt2a3J4ZndoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI4NDAzMDUsImV4cCI6MjA2ODQxNjMwNX0.6z0kRlR_qUSxP_jPngOfF1mcNbiMZBS3RsategLrjxo"; // Clé publique (anonyme) — attention à la config RLS
+
+    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    async function saveToSupabase() {
+      const data = [...tbody.querySelectorAll("tr")].map((row) => {
+        const videoLink = row.querySelector("td a")?.href || "";
+        return {
+          id: videoLink,
+          niveau: row.cells[1].textContent,
+          contenu: row.cells[2].textContent,
+          ressources: row.cells[3].innerHTML,
+        };
+      });
+
+      const userId = document.getElementById("userId").value.trim();
+
+      const { error } = await supabaseClient
+        .from("videos")
+        .upsert({ id: userId, content: data });
+
+      if (error) {
+        console.error("Erreur Supabase (save):", error.message);
+        alert("Erreur lors de la sauvegarde !");
       }
     }
-  </style>
-</head>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
-<script>
-  const SUPABASE_URL = 'https://nfqaijeeozypkvkrxfwh.supabase.co'; // Remplace par ton URL
-  const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5mcWFpamVlb3p5cGt2a3J4ZndoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI4NDAzMDUsImV4cCI6MjA2ODQxNjMwNX0.6z0kRlR_qUSxP_jPngOfF1mcNbiMZBS3RsategLrjxo'; // Clé publique (anonyme) — attention à la config RLS
+    async function loadFromSupabase() {
+      const userId = document.getElementById("userId").value.trim();
+      const { data, error } = await supabaseClient
+        .from("videos")
+        .select("content")
+        .eq("id", userId)
+        .single();
 
-  const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+      if (error) {
+        console.warn("Pas de données Supabase ou erreur :", error.message);
+        return;
+      }
 
-  async function saveToSupabase() {
-    const data = [...tbody.querySelectorAll('tr')].map(row => {
-      const videoLink = row.querySelector('td a')?.href || "";
-      return {
-        id: videoLink,
-        niveau: row.cells[1].textContent,
-        contenu: row.cells[2].textContent,
-        ressources: row.cells[3].innerHTML
-      };
-    });
-
-    const userId = document.getElementById('userId').value.trim();
-
-    const { error } = await supabase
-      .from('videos')
-      .upsert({ id: userId, content: data });
-
-    if (error) {
-      console.error('Erreur Supabase (save):', error.message);
-      alert("Erreur lors de la sauvegarde !");
-    }
-  }
-
-  async function loadFromSupabase() {
-    const userId = document.getElementById('userId').value.trim();
-    const { data, error } = await supabase
-      .from('videos')
-      .select('content')
-      .eq('id', userId)
-      .single();
-
-    if (error) {
-      console.warn("Pas de données Supabase ou erreur :", error.message);
-      return;
+      const items = data.content || [];
+      tbody.innerHTML = "";
+      items.forEach((item) =>
+        insertRow(item.id, item.niveau, item.contenu, item.ressources)
+      );
     }
 
-    const items = data.content || [];
-    tbody.innerHTML = '';
-    items.forEach(item =>
-      insertRow(item.id, item.niveau, item.contenu, item.ressources)
-    );
-  }
+    // Remplace ou complète la logique existante :
+    async function saveTable() {
+      await saveToSupabase();
+    }
+    async function loadTable() {
+      await loadFromSupabase();
+    }
 
-  // Remplace ou complète la logique existante :
-async function saveTable() { await saveToSupabase(); }
-async function loadTable() { await loadFromSupabase(); }
+    loadTable();
+  </script>
 
-  loadTable();
-</script>
+  <body>
+    <header>
+      <h1>MICHAWARO</h1>
+      <p>Apprendre, Enseigner, Partager</p>
+    </header>
 
-<body>
+    <!-- À placer juste avant la balise <main> ou juste après <header> -->
 
-<header>
-  <h1>MICHAWARO</h1>
-  <p>Apprendre, Enseigner, Partager</p>
-</header>
+    <div
+      style="
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        justify-content: flex-end;
+        margin: 10px 5vw 0 0;
+      "
+    >
+      <input
+        type="text"
+        id="userId"
+        value="michawaro4480"
+        placeholder="Identifiant"
+        style="
+          padding: 6px 10px;
+          border-radius: 6px;
+          border: 1px solid #ccc;
+          font-family: inherit;
+          font-size: 1em;
+          width: 160px;
+        "
+      />
+      <button
+        id="connectBtn"
+        style="
+          background: #89d6e2;
+          color: #fff;
+          border: none;
+          border-radius: 6px;
+          padding: 7px 16px;
+          font-weight: bold;
+          cursor: pointer;
+          font-family: inherit;
+          font-size: 1em;
+        "
+      >
+        Connexion
+      </button>
+      <button
+        id="saveBtn"
+        style="
+          background: #e84e9b;
+          color: #fff;
+          border: none;
+          border-radius: 6px;
+          padding: 7px 16px;
+          font-weight: bold;
+          cursor: pointer;
+          font-family: inherit;
+          font-size: 1em;
+        "
+      >
+        💾 Sauvegarder
+      </button>
+    </div>
 
-<!-- À placer juste avant la balise <main> ou juste après <header> -->
+    <main>
+      <table id="videoTable">
+        <thead>
+          <tr>
+            <th>Vidéo</th>
+            <th>Niveau</th>
+            <th>Contenu</th>
+            <th>Ressources</th>
+          </tr>
+        </thead>
+        <tbody id="tableBody"></tbody>
+      </table>
 
-<div style="display:flex; align-items:center; gap:10px; justify-content:flex-end; margin: 10px 5vw 0 0;">
-  <input type="text" id="userId" value="michawaro4480" placeholder="Identifiant" 
-         style="padding:6px 10px; border-radius:6px; border:1px solid #ccc; font-family:inherit; font-size:1em; width:160px;">
-  <button id="connectBtn" style="background:#89d6e2; color:#fff; border:none; border-radius:6px; padding:7px 16px; font-weight:bold; cursor:pointer; font-family:inherit; font-size:1em;">
-    Connexion
-  </button>
-  <button id="saveBtn" style="background:#e84e9b; color:#fff; border:none; border-radius:6px; padding:7px 16px; font-weight:bold; cursor:pointer; font-family:inherit; font-size:1em;">
-    💾 Sauvegarder
-  </button>
-</div>
+      <div class="form-container">
+        <input
+          type="text"
+          id="videoUrl"
+          placeholder="URL de la vidéo YouTube"
+        />
+        <input type="text" id="niveau" placeholder="Niveau" />
+        <input type="text" id="contenu" placeholder="Contenu" />
+        <input type="text" id="ressources" placeholder="Ressources" />
+        <button onclick="addVideo()">Ajouter la vidéo</button>
+      </div>
+    </main>
 
-<main>
-  <table id="videoTable">
-    <thead>
-      <tr>
-        <th>Vidéo</th>
-        <th>Niveau</th>
-        <th>Contenu</th>
-        <th>Ressources</th>
-      </tr>
-    </thead>
-    <tbody id="tableBody"></tbody>
-  </table>
+    <script>
+      const tbody = document.getElementById("tableBody");
 
-  <div class="form-container">
-    <input type="text" id="videoUrl" placeholder="URL de la vidéo YouTube">
-    <input type="text" id="niveau" placeholder="Niveau">
-    <input type="text" id="contenu" placeholder="Contenu">
-    <input type="text" id="ressources" placeholder="Ressources">
-    <button onclick="addVideo()">Ajouter la vidéo</button>
-  </div>
-</main>
+      function getYouTubeId(url) {
+        try {
+          const parsed = new URL(url);
+          if (parsed.hostname === "youtu.be") return parsed.pathname.slice(1);
+          if (parsed.hostname.includes("youtube.com"))
+            return parsed.searchParams.get("v");
+        } catch {
+          return null;
+        }
+        return null;
+      }
 
-<script>
-const tbody = document.getElementById('tableBody');
+      function insertRow(videoUrl, niveau, contenu, ressources) {
+        const id = getYouTubeId(videoUrl) || "";
+        const row = document.createElement("tr");
 
-function getYouTubeId(url) {
-  try {
-    const parsed = new URL(url);
-    if (parsed.hostname === 'youtu.be') return parsed.pathname.slice(1);
-    if (parsed.hostname.includes('youtube.com')) return parsed.searchParams.get('v');
-  } catch {
-    return null;
-  }
-  return null;
-}
-
-function insertRow(videoUrl, niveau, contenu, ressources) {
-  const id = getYouTubeId(videoUrl) || "";
-  const row = document.createElement("tr");
-
-  const tdVideo = document.createElement("td");
-  tdVideo.innerHTML = `
+        const tdVideo = document.createElement("td");
+        tdVideo.innerHTML = `
     <a href="${videoUrl}" target="_blank">
       <img class="thumb" src="https://img.youtube.com/vi/${id}/mqdefault.jpg" alt="Miniature vidéo">
     </a>
     <span class="edit-icon" style="cursor:pointer;display:block;margin-top:5px;color:#999;font-size:12px;" onclick="changeVideoUrl(this)">✏️ Modifier</span>
   `;
 
-  const tdNiveau = document.createElement("td");
-  tdNiveau.contentEditable = true;
-  tdNiveau.textContent = niveau;
+        const tdNiveau = document.createElement("td");
+        tdNiveau.contentEditable = true;
+        tdNiveau.textContent = niveau;
 
-  const tdContenu = document.createElement("td");
-  tdContenu.contentEditable = true;
-  tdContenu.textContent = contenu;
+        const tdContenu = document.createElement("td");
+        tdContenu.contentEditable = true;
+        tdContenu.textContent = contenu;
 
-  const tdRessources = document.createElement("td");
-  const resourceContainer = document.createElement("div");
-  resourceContainer.className = "resource-container";
+        const tdRessources = document.createElement("td");
+        const resourceContainer = document.createElement("div");
+        resourceContainer.className = "resource-container";
 
-  const resourceTitleWrapper = document.createElement("div");
-  resourceTitleWrapper.className = "resource-title-wrapper";
-  resourceTitleWrapper.style.position = "relative"; // Permet de positionner la coche par rapport au titre
+        const resourceTitleWrapper = document.createElement("div");
+        resourceTitleWrapper.className = "resource-title-wrapper";
+        resourceTitleWrapper.style.position = "relative"; // Permet de positionner la coche par rapport au titre
 
-  const resourceTitle = document.createElement("div");
-  resourceTitle.className = "resource-title";
-  resourceTitle.contentEditable = true;
-  resourceTitle.textContent = "Titre";
+        const resourceTitle = document.createElement("div");
+        resourceTitle.className = "resource-title";
+        resourceTitle.contentEditable = true;
+        resourceTitle.textContent = "Titre";
 
-  // Bouton pour supprimer le titre principal
-  const deleteTitleBtn = document.createElement("button");
-  deleteTitleBtn.textContent = "❌";
-  deleteTitleBtn.className = "delete-btn";
-  deleteTitleBtn.style.position = "absolute";
-  deleteTitleBtn.style.top = "50%";
-  deleteTitleBtn.style.right = "0px"; // Rapproche la coche à droite du titre
-  deleteTitleBtn.style.transform = "translateY(-50%)"; // Centre verticalement la coche
-  deleteTitleBtn.style.display = "none"; // Caché par défaut
-  deleteTitleBtn.onclick = () => {
-    resourceTitleWrapper.remove(); // Supprime complètement le conteneur du titre
-    saveTable();
-  };
-
-  let hideTimeout;
-
-  resourceTitleWrapper.addEventListener("mouseover", () => {
-    clearTimeout(hideTimeout); // Annule le délai si la souris revient sur le titre
-    deleteTitleBtn.style.display = "flex";
-  });
-
-  resourceTitleWrapper.addEventListener("mouseout", () => {
-    hideTimeout = setTimeout(() => {
-      deleteTitleBtn.style.display = "none";
-    }, 300); // Délai de 300ms avant de cacher la coche
-  });
-
-  // Empêche la coche de disparaître lorsqu'elle est survolée
-  deleteTitleBtn.addEventListener("mouseover", () => {
-    clearTimeout(hideTimeout); // Annule le délai si la souris survole la coche
-    deleteTitleBtn.style.display = "flex";
-  });
-
-  deleteTitleBtn.addEventListener("mouseout", () => {
-    hideTimeout = setTimeout(() => {
-      deleteTitleBtn.style.display = "none";
-    }, 300); // Délai de 300ms avant de cacher la coche
-  });
-
-  // Afficher la coche uniquement au survol du titre ou de la coche elle-même
-  resourceTitleWrapper.addEventListener("mouseover", () => {
-    deleteTitleBtn.style.display = "flex";
-  });
-  resourceTitleWrapper.addEventListener("mouseout", () => {
-    deleteTitleBtn.style.display = "none";
-  });
-
-  resourceTitleWrapper.appendChild(resourceTitle);
-  resourceTitleWrapper.appendChild(deleteTitleBtn);
-
-  const dropZone = document.createElement("div");
-  dropZone.className = "drop-zone";
-  dropZone.textContent = "Glisser une ou plusieurs images ici";
-
-  resourceContainer.appendChild(resourceTitleWrapper);
-  resourceContainer.appendChild(dropZone);
-  tdRessources.appendChild(resourceContainer);
-  row.append(tdVideo, tdNiveau, tdContenu, tdRessources);
-  tbody.appendChild(row);
-
-  // Drag & Drop
-  resourceContainer.addEventListener('dragover', e => {
-    e.preventDefault();
-    resourceContainer.style.backgroundColor = '#ffe9f3';
-  });
-
-  resourceContainer.addEventListener('dragleave', e => {
-    e.preventDefault();
-    resourceContainer.style.backgroundColor = '#fafafa';
-  });
-
-  resourceContainer.addEventListener('drop', e => {
-    e.preventDefault();
-    resourceContainer.style.backgroundColor = '#fafafa';
-    const files = e.dataTransfer.files;
-    if (!files.length) return;
-
-    Array.from(files).forEach(file => {
-      if (!file.type.startsWith('image/')) return;
-      if (file.size > 2 * 1024 * 1024) {
-        alert("Image trop lourde (> 2 Mo)");
-        return;
-      }
-
-      const reader = new FileReader();
-      reader.onload = () => {
-        const block = document.createElement("div");
-        block.className = "resource-block";
-
-        const delBtn = document.createElement("button");
-        delBtn.className = "delete-btn";
-        delBtn.textContent = "❌";
-        delBtn.onclick = () => {
-          block.remove();
+        // Bouton pour supprimer le titre principal
+        const deleteTitleBtn = document.createElement("button");
+        deleteTitleBtn.textContent = "❌";
+        deleteTitleBtn.className = "delete-btn";
+        deleteTitleBtn.style.position = "absolute";
+        deleteTitleBtn.style.top = "50%";
+        deleteTitleBtn.style.right = "0px"; // Rapproche la coche à droite du titre
+        deleteTitleBtn.style.transform = "translateY(-50%)"; // Centre verticalement la coche
+        deleteTitleBtn.style.display = "none"; // Caché par défaut
+        deleteTitleBtn.onclick = () => {
+          resourceTitleWrapper.remove(); // Supprime complètement le conteneur du titre
           saveTable();
         };
 
-        const img = document.createElement("img");
-        img.src = reader.result;
-        img.className = "resource-img";
+        let hideTimeout;
 
-        const caption = document.createElement("div");
-        caption.className = "image-title";
-        caption.contentEditable = true;
-        caption.textContent = "Titre de l’image";
+        resourceTitleWrapper.addEventListener("mouseover", () => {
+          clearTimeout(hideTimeout); // Annule le délai si la souris revient sur le titre
+          deleteTitleBtn.style.display = "flex";
+        });
 
-        block.appendChild(delBtn);
-        block.appendChild(img);
-        block.appendChild(caption);
-        resourceContainer.insertBefore(block, dropZone);
+        resourceTitleWrapper.addEventListener("mouseout", () => {
+          hideTimeout = setTimeout(() => {
+            deleteTitleBtn.style.display = "none";
+          }, 300); // Délai de 300ms avant de cacher la coche
+        });
 
-        saveTable();
-      };
-      reader.readAsDataURL(file);
-    });
-  });
-}
+        // Empêche la coche de disparaître lorsqu'elle est survolée
+        deleteTitleBtn.addEventListener("mouseover", () => {
+          clearTimeout(hideTimeout); // Annule le délai si la souris survole la coche
+          deleteTitleBtn.style.display = "flex";
+        });
 
-function changeVideoUrl(el) {
-  const td = el.closest('td');
-  const oldUrl = td.querySelector('a').href;
-  const newUrl = prompt("Nouvelle URL YouTube :", oldUrl);
-  if (newUrl && getYouTubeId(newUrl)) {
-    const newId = getYouTubeId(newUrl);
-    td.innerHTML = `
+        deleteTitleBtn.addEventListener("mouseout", () => {
+          hideTimeout = setTimeout(() => {
+            deleteTitleBtn.style.display = "none";
+          }, 300); // Délai de 300ms avant de cacher la coche
+        });
+
+        // Afficher la coche uniquement au survol du titre ou de la coche elle-même
+        resourceTitleWrapper.addEventListener("mouseover", () => {
+          deleteTitleBtn.style.display = "flex";
+        });
+        resourceTitleWrapper.addEventListener("mouseout", () => {
+          deleteTitleBtn.style.display = "none";
+        });
+
+        resourceTitleWrapper.appendChild(resourceTitle);
+        resourceTitleWrapper.appendChild(deleteTitleBtn);
+
+        const dropZone = document.createElement("div");
+        dropZone.className = "drop-zone";
+        dropZone.textContent = "Glisser une ou plusieurs images ici";
+
+        resourceContainer.appendChild(resourceTitleWrapper);
+        resourceContainer.appendChild(dropZone);
+        tdRessources.appendChild(resourceContainer);
+        row.append(tdVideo, tdNiveau, tdContenu, tdRessources);
+        tbody.appendChild(row);
+
+        // Drag & Drop
+        resourceContainer.addEventListener("dragover", (e) => {
+          e.preventDefault();
+          resourceContainer.style.backgroundColor = "#ffe9f3";
+        });
+
+        resourceContainer.addEventListener("dragleave", (e) => {
+          e.preventDefault();
+          resourceContainer.style.backgroundColor = "#fafafa";
+        });
+
+        resourceContainer.addEventListener("drop", (e) => {
+          e.preventDefault();
+          resourceContainer.style.backgroundColor = "#fafafa";
+          const files = e.dataTransfer.files;
+          if (!files.length) return;
+
+          Array.from(files).forEach((file) => {
+            if (!file.type.startsWith("image/")) return;
+            if (file.size > 2 * 1024 * 1024) {
+              alert("Image trop lourde (> 2 Mo)");
+              return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = () => {
+              const block = document.createElement("div");
+              block.className = "resource-block";
+
+              const delBtn = document.createElement("button");
+              delBtn.className = "delete-btn";
+              delBtn.textContent = "❌";
+              delBtn.onclick = () => {
+                block.remove();
+                saveTable();
+              };
+
+              const img = document.createElement("img");
+              img.src = reader.result;
+              img.className = "resource-img";
+
+              const caption = document.createElement("div");
+              caption.className = "image-title";
+              caption.contentEditable = true;
+              caption.textContent = "Titre de l’image";
+
+              block.appendChild(delBtn);
+              block.appendChild(img);
+              block.appendChild(caption);
+              resourceContainer.insertBefore(block, dropZone);
+
+              saveTable();
+            };
+            reader.readAsDataURL(file);
+          });
+        });
+      }
+
+      function changeVideoUrl(el) {
+        const td = el.closest("td");
+        const oldUrl = td.querySelector("a").href;
+        const newUrl = prompt("Nouvelle URL YouTube :", oldUrl);
+        if (newUrl && getYouTubeId(newUrl)) {
+          const newId = getYouTubeId(newUrl);
+          td.innerHTML = `
       <a href="${newUrl}" target="_blank">
         <img class="thumb" src="https://img.youtube.com/vi/${newId}/mqdefault.jpg" alt="Miniature vidéo">
       </a>
       <span class="edit-icon" style="cursor:pointer;display:block;margin-top:5px;color:#999;font-size:12px;" onclick="changeVideoUrl(this)">✏️ Modifier</span>
     `;
-    saveTable();
-  } else {
-    alert("URL YouTube invalide");
-  }
-}
+          saveTable();
+        } else {
+          alert("URL YouTube invalide");
+        }
+      }
 
-function addVideo() {
-  const url = document.getElementById('videoUrl').value.trim();
-  const niveau = document.getElementById('niveau').value.trim();
-  const contenu = document.getElementById('contenu').value.trim();
-  const ressources = document.getElementById('ressources').value.trim();
+      function addVideo() {
+        const url = document.getElementById("videoUrl").value.trim();
+        const niveau = document.getElementById("niveau").value.trim();
+        const contenu = document.getElementById("contenu").value.trim();
+        const ressources = document.getElementById("ressources").value.trim();
 
-  if (!getYouTubeId(url)) {
-    alert("URL YouTube invalide");
-    return;
-  }
+        if (!getYouTubeId(url)) {
+          alert("URL YouTube invalide");
+          return;
+        }
 
-  insertRow(url, niveau, contenu, ressources);
-  saveTable();
+        insertRow(url, niveau, contenu, ressources);
+        saveTable();
 
-  document.getElementById('videoUrl').value = '';
-  document.getElementById('niveau').value = '';
-  document.getElementById('contenu').value = '';
-  document.getElementById('ressources').value = '';
-}
+        document.getElementById("videoUrl").value = "";
+        document.getElementById("niveau").value = "";
+        document.getElementById("contenu").value = "";
+        document.getElementById("ressources").value = "";
+      }
 
-loadTable();
-tbody.addEventListener('focusout', saveTable);
+      loadTable();
+      tbody.addEventListener("focusout", saveTable);
 
-document.getElementById('connectBtn').onclick = async function() {
-  await loadFromSupabase();
-};
+      document.getElementById("connectBtn").onclick = async function () {
+        await loadFromSupabase();
+      };
 
-document.getElementById('saveBtn').onclick = async function() {
-  await saveToSupabase();
-};
-</script>
-
-</body>
+      document.getElementById("saveBtn").onclick = async function () {
+        await saveToSupabase();
+      };
+    </script>
+  </body>
 </html>
