@@ -423,6 +423,18 @@
         }
 
         insertRow(item.video_url, item.niveau, item.contenu, ressourcesHTML);
+        // Ajout des écouteurs focusout sur les titres après l'injection HTML
+        const lastRow = tbody.lastElementChild;
+        if (lastRow) {
+          const resourceTitle = lastRow.querySelector(".resource-title");
+          if (resourceTitle) {
+            resourceTitle.addEventListener("focusout", saveTable);
+          }
+          const imageTitles = lastRow.querySelectorAll(".image-title");
+          imageTitles.forEach((caption) => {
+            caption.addEventListener("focusout", saveTable);
+          });
+        }
       });
     }
 
@@ -579,6 +591,7 @@
         resourceTitle.className = "resource-title";
         resourceTitle.contentEditable = true;
         resourceTitle.textContent = "Titre";
+        resourceTitle.addEventListener("focusout", saveTable);
 
         // Bouton pour supprimer le titre principal
         const deleteTitleBtn = document.createElement("button");
@@ -685,6 +698,7 @@
               caption.className = "image-title";
               caption.contentEditable = true;
               caption.textContent = "Titre de l'image";
+              caption.addEventListener("focusout", saveTable);
 
               block.appendChild(delBtn);
               block.appendChild(img);
