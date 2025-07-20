@@ -591,93 +591,103 @@
         tdContenu.contentEditable = true;
 
         const tdRessources = document.createElement("td");
-        const resourceContainer = document.createElement("div");
-        resourceContainer.className = "resource-container";
+        if (
+          ressources &&
+          ressources.startsWith &&
+          ressources.startsWith('<div class="resource-container"')
+        ) {
+          // Si ressources est du HTML déjà généré, l'injecter directement
+          tdRessources.innerHTML = ressources;
+        } else {
+          // Sinon, comportement normal (création DOM)
+          const resourceContainer = document.createElement("div");
+          resourceContainer.className = "resource-container";
 
-        const resourceTitleWrapper = document.createElement("div");
-        resourceTitleWrapper.className = "resource-title-wrapper";
-        resourceTitleWrapper.style.position = "relative"; // Permet de positionner la coche par rapport au titre
+          const resourceTitleWrapper = document.createElement("div");
+          resourceTitleWrapper.className = "resource-title-wrapper";
+          resourceTitleWrapper.style.position = "relative"; // Permet de positionner la coche par rapport au titre
 
-        const resourceTitle = document.createElement("div");
-        resourceTitle.className = "resource-title";
-        resourceTitle.contentEditable = true;
-        resourceTitle.textContent = "Titre";
-        resourceTitle.addEventListener("focusout", saveTable);
+          const resourceTitle = document.createElement("div");
+          resourceTitle.className = "resource-title";
+          resourceTitle.contentEditable = true;
+          resourceTitle.textContent = "Titre";
+          resourceTitle.addEventListener("focusout", saveTable);
 
-        // Bouton pour supprimer le titre principal
-        const deleteTitleBtn = document.createElement("button");
-        deleteTitleBtn.textContent = "❌";
-        deleteTitleBtn.className = "delete-btn";
-        deleteTitleBtn.style.position = "absolute";
-        deleteTitleBtn.style.top = "50%";
-        deleteTitleBtn.style.right = "0px"; // Rapproche la coche à droite du titre
-        deleteTitleBtn.style.transform = "translateY(-50%)"; // Centre verticalement la coche
-        deleteTitleBtn.style.display = "none"; // Caché par défaut
-        deleteTitleBtn.onclick = () => {
-          resourceTitleWrapper.remove(); // Supprime complètement le conteneur du titre
-          saveTable();
-        };
+          // Bouton pour supprimer le titre principal
+          const deleteTitleBtn = document.createElement("button");
+          deleteTitleBtn.textContent = "❌";
+          deleteTitleBtn.className = "delete-btn";
+          deleteTitleBtn.style.position = "absolute";
+          deleteTitleBtn.style.top = "50%";
+          deleteTitleBtn.style.right = "0px"; // Rapproche la coche à droite du titre
+          deleteTitleBtn.style.transform = "translateY(-50%)"; // Centre verticalement la coche
+          deleteTitleBtn.style.display = "none"; // Caché par défaut
+          deleteTitleBtn.onclick = () => {
+            resourceTitleWrapper.remove(); // Supprime complètement le conteneur du titre
+            saveTable();
+          };
 
-        let hideTimeout;
+          let hideTimeout;
 
-        resourceTitleWrapper.addEventListener("mouseover", () => {
-          clearTimeout(hideTimeout); // Annule le délai si la souris revient sur le titre
-          deleteTitleBtn.style.display = "flex";
-        });
+          resourceTitleWrapper.addEventListener("mouseover", () => {
+            clearTimeout(hideTimeout); // Annule le délai si la souris revient sur le titre
+            deleteTitleBtn.style.display = "flex";
+          });
 
-        resourceTitleWrapper.addEventListener("mouseout", () => {
-          hideTimeout = setTimeout(() => {
+          resourceTitleWrapper.addEventListener("mouseout", () => {
+            hideTimeout = setTimeout(() => {
+              deleteTitleBtn.style.display = "none";
+            }, 300); // Délai de 300ms avant de cacher la coche
+          });
+
+          // Empêche la coche de disparaître lorsqu'elle est survolée
+          deleteTitleBtn.addEventListener("mouseover", () => {
+            clearTimeout(hideTimeout); // Annule le délai si la souris survole la coche
+            deleteTitleBtn.style.display = "flex";
+          });
+
+          deleteTitleBtn.addEventListener("mouseout", () => {
+            hideTimeout = setTimeout(() => {
+              deleteTitleBtn.style.display = "none";
+            }, 300); // Délai de 300ms avant de cacher la coche
+          });
+
+          // Afficher la coche uniquement au survol du titre ou de la coche elle-même
+          resourceTitleWrapper.addEventListener("mouseover", () => {
+            deleteTitleBtn.style.display = "flex";
+          });
+          resourceTitleWrapper.addEventListener("mouseout", () => {
             deleteTitleBtn.style.display = "none";
-          }, 300); // Délai de 300ms avant de cacher la coche
-        });
+          });
 
-        // Empêche la coche de disparaître lorsqu'elle est survolée
-        deleteTitleBtn.addEventListener("mouseover", () => {
-          clearTimeout(hideTimeout); // Annule le délai si la souris survole la coche
-          deleteTitleBtn.style.display = "flex";
-        });
+          resourceTitleWrapper.appendChild(resourceTitle);
+          resourceTitleWrapper.appendChild(deleteTitleBtn);
 
-        deleteTitleBtn.addEventListener("mouseout", () => {
-          hideTimeout = setTimeout(() => {
-            deleteTitleBtn.style.display = "none";
-          }, 300); // Délai de 300ms avant de cacher la coche
-        });
+          const dropZone = document.createElement("div");
+          dropZone.className = "drop-zone";
+          dropZone.textContent = ""; // Zone vide mais fonctionnelle
 
-        // Afficher la coche uniquement au survol du titre ou de la coche elle-même
-        resourceTitleWrapper.addEventListener("mouseover", () => {
-          deleteTitleBtn.style.display = "flex";
-        });
-        resourceTitleWrapper.addEventListener("mouseout", () => {
-          deleteTitleBtn.style.display = "none";
-        });
-
-        resourceTitleWrapper.appendChild(resourceTitle);
-        resourceTitleWrapper.appendChild(deleteTitleBtn);
-
-        const dropZone = document.createElement("div");
-        dropZone.className = "drop-zone";
-        dropZone.textContent = ""; // Zone vide mais fonctionnelle
-
-        resourceContainer.appendChild(resourceTitleWrapper);
-        resourceContainer.appendChild(dropZone);
-        tdRessources.appendChild(resourceContainer);
+          resourceContainer.appendChild(resourceTitleWrapper);
+          resourceContainer.appendChild(dropZone);
+          tdRessources.appendChild(resourceContainer);
+        }
         row.append(tdVideo, tdNiveau, tdContenu, tdRessources);
         tbody.appendChild(row);
 
         // Drag & Drop
-        resourceContainer.addEventListener("dragover", (e) => {
+        tdRessources.addEventListener("dragover", (e) => {
           e.preventDefault();
-          resourceContainer.style.backgroundColor = "#ffe9f3";
+          tdRessources.style.backgroundColor = "#ffe9f3";
         });
 
-        resourceContainer.addEventListener("dragleave", (e) => {
+        tdRessources.addEventListener("dragleave", (e) => {
           e.preventDefault();
-          resourceContainer.style.backgroundColor = "#fafafa";
+          tdRessources.style.backgroundColor = "#fafafa";
         });
 
-        resourceContainer.addEventListener("drop", (e) => {
+        tdRessources.addEventListener("drop", (e) => {
           e.preventDefault();
-          resourceContainer.style.backgroundColor = "#fafafa";
+          tdRessources.style.backgroundColor = "#fafafa";
           const files = e.dataTransfer.files;
           if (!files.length) return;
 
@@ -714,7 +724,7 @@
               block.appendChild(delBtn);
               block.appendChild(img);
               block.appendChild(caption);
-              resourceContainer.insertBefore(block, dropZone);
+              tdRessources.insertBefore(block, dropZone);
 
               saveTable();
             };
