@@ -262,11 +262,17 @@
       // Préparer les nouvelles données
       const videosData = rows.map((row) => {
         const videoLink = row.querySelector("td a")?.href || "";
+
+        // Récupérer les données des ressources (titres + images)
+        const ressourcesCell = row.cells[3];
+        const ressourcesHTML = ressourcesCell.innerHTML;
+
         return {
           user_id: userId,
           video_url: videoLink,
           niveau: row.cells[1].textContent,
           contenu: row.cells[2].textContent,
+          ressources: ressourcesHTML, // Ajouter les ressources
         };
       });
 
@@ -291,6 +297,7 @@
               .update({
                 niveau: videoData.niveau,
                 contenu: videoData.contenu,
+                ressources: videoData.ressources, // Mettre à jour les ressources
               })
               .eq("id", existingData.id);
 
@@ -340,7 +347,7 @@
       // Charger les données pour cet utilisateur spécifique
       const { data, error } = await supabaseClient
         .from("videos")
-        .select("video_url, niveau, contenu")
+        .select("video_url, niveau, contenu, ressources")
         .eq("user_id", userId)
         .order("created_at", { ascending: true });
 
@@ -351,8 +358,9 @@
 
       tbody.innerHTML = "";
       data.forEach((item) => {
-        // Créer une chaîne HTML pour les ressources (vide par défaut)
+        // Utiliser les ressources sauvegardées ou créer une structure par défaut
         const ressources =
+          item.ressources ||
           '<div class="resource-container"><div class="resource-title-wrapper"><div class="resource-title" contenteditable="true">Titre</div></div><div class="drop-zone"></div></div>';
 
         insertRow(item.video_url, item.niveau, item.contenu, ressources);
