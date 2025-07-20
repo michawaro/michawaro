@@ -450,6 +450,9 @@
           });
         }
       });
+
+      // Appliquer les restrictions d'édition après le chargement
+      disableEditing();
     }
 
     // Remplace ou complète la logique existante :
@@ -696,6 +699,13 @@
     <span class="edit-icon" style="cursor:pointer;display:block;margin-top:5px;color:#999;font-size:12px;" onclick="changeVideoUrl(this)">✏️ Modifier</span>
   `;
 
+        // Désactiver l'édition de l'URL si pas connecté
+        const editIcon = tdVideo.querySelector(".edit-icon");
+        if (editIcon) {
+          editIcon.style.pointerEvents = "none";
+          editIcon.style.opacity = "0.3";
+        }
+
         const tdNiveau = document.createElement("td");
         tdNiveau.innerHTML = niveau;
         tdNiveau.contentEditable = true;
@@ -788,6 +798,9 @@
         row.append(tdVideo, tdNiveau, tdContenu, tdRessources);
         tbody.appendChild(row);
 
+        // Appliquer les restrictions d'édition après l'ajout de la ligne
+        disableEditing();
+
         // Drag & Drop
         tdRessources.addEventListener("dragover", (e) => {
           e.preventDefault();
@@ -853,6 +866,8 @@
               }
 
               saveTable();
+              // Réappliquer les restrictions après ajout d'image
+              disableEditing();
             };
             reader.readAsDataURL(file); // Convertit automatiquement en Base64
           });
@@ -925,6 +940,13 @@
           container.style.pointerEvents = "none";
         });
 
+        // Désactiver les icônes d'édition d'URL
+        const editIcons = document.querySelectorAll(".edit-icon");
+        editIcons.forEach((icon) => {
+          icon.style.pointerEvents = "none";
+          icon.style.opacity = "0.3";
+        });
+
         // Désactiver le tri des lignes
         const sortableInstance = Sortable.get(
           document.getElementById("tableBody")
@@ -961,6 +983,13 @@
         );
         resourceContainers.forEach((container) => {
           container.style.pointerEvents = "auto";
+        });
+
+        // Activer les icônes d'édition d'URL
+        const editIcons = document.querySelectorAll(".edit-icon");
+        editIcons.forEach((icon) => {
+          icon.style.pointerEvents = "auto";
+          icon.style.opacity = "1";
         });
 
         // Réactiver le tri des lignes
