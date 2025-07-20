@@ -384,7 +384,7 @@
       <input
         type="text"
         id="userId"
-        value="michawaro4480"
+        value="ange"
         placeholder="Identifiant"
         style="
           padding: 6px 10px;
@@ -393,6 +393,7 @@
           font-family: inherit;
           font-size: 1em;
           width: 160px;
+          display: none;
         "
       />
       <button
@@ -662,8 +663,38 @@
       loadTable();
       tbody.addEventListener("focusout", saveTable);
 
+      // Fonction de chiffrement simple
+      function encrypt(text) {
+        return btoa(text.split("").reverse().join(""));
+      }
+
+      function decrypt(encrypted) {
+        return atob(encrypted).split("").reverse().join("");
+      }
+
       document.getElementById("connectBtn").onclick = async function () {
-        await loadFromSupabase();
+        const userId = prompt("Veuillez entrer votre identifiant :");
+        if (userId && userId.trim()) {
+          // Vérifier que l'identifiant est autorisé (double chiffrement)
+          const expectedId = encrypt("michawaro4480");
+          if (encrypt(userId.trim()) === expectedId) {
+            // Demander le mot de passe
+            const password = prompt("Veuillez entrer votre mot de passe :");
+            const expectedPassword = encrypt("4480Svt4426");
+            if (password && encrypt(password.trim()) === expectedPassword) {
+              document.getElementById("userId").value = userId.trim();
+              await loadFromSupabase();
+            } else {
+              alert("Mot de passe incorrect. Accès refusé.");
+              document.getElementById("userId").value = "";
+            }
+          } else {
+            alert(
+              "Identifiant non autorisé. Seul l'administrateur peut accéder à cette page."
+            );
+            document.getElementById("userId").value = "";
+          }
+        }
       };
 
       document.getElementById("saveBtn").onclick = async function () {
