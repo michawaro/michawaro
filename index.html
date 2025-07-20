@@ -631,6 +631,16 @@
           />
           Pédagogie
         </label>
+        <label style="display: flex; align-items: center; gap: 4px">
+          <input
+            type="checkbox"
+            class="contenu-checkbox"
+            value="Cours"
+            checked
+            style="accent-color: #fce86e; width: 18px; height: 18px"
+          />
+          Cours
+        </label>
       </div>
     </div>
 
@@ -962,7 +972,7 @@
           );
           // Filtrage Contenu
           let visibleContenu = true;
-          if (contenusAffiches.length < 2) {
+          if (contenusAffiches.length < 3) {
             // Si une coche est décochée, on filtre
             if (
               !contenusAffiches.includes("MÉTHODOLOGIE") &&
@@ -972,6 +982,11 @@
             if (
               !contenusAffiches.includes("PÉDAGOGIE") &&
               contenuTexte.includes("PÉDAGOGIE")
+            )
+              visibleContenu = false;
+            if (
+              !contenusAffiches.includes("COURS") &&
+              contenuTexte.includes("COURS")
             )
               visibleContenu = false;
           }
