@@ -667,8 +667,14 @@
         try {
           const parsed = new URL(url);
           if (parsed.hostname === "youtu.be") return parsed.pathname.slice(1);
-          if (parsed.hostname.includes("youtube.com"))
+          if (parsed.hostname.includes("youtube.com")) {
+            // Gérer les YouTube Shorts
+            if (parsed.pathname.startsWith("/shorts/")) {
+              return parsed.pathname.split("/shorts/")[1];
+            }
+            // Gérer les URLs YouTube classiques
             return parsed.searchParams.get("v");
+          }
         } catch {
           return null;
         }
