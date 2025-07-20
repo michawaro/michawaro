@@ -104,6 +104,15 @@
         border-radius: 4px;
       }
 
+      /* Réduction de 30% de la taille des vignettes YouTube */
+      .thumb {
+        width: 70%; /* Réduction de 30% (100% - 30% = 70%) */
+        height: auto;
+        border-radius: 6px;
+        display: block;
+        margin: 0 auto;
+      }
+
       .delete-btn {
         position: absolute;
         top: 3px; /* Ajustement pour centrer verticalement */
@@ -344,7 +353,7 @@
       data.forEach((item) => {
         // Créer une chaîne HTML pour les ressources (vide par défaut)
         const ressources =
-          '<div class="resource-container"><div class="resource-title-wrapper"><div class="resource-title" contenteditable="true">Titre</div></div><div class="drop-zone">Glisser une ou plusieurs images ici</div></div>';
+          '<div class="resource-container"><div class="resource-title-wrapper"><div class="resource-title" contenteditable="true">Titre</div></div><div class="drop-zone"></div></div>';
 
         insertRow(item.video_url, item.niveau, item.contenu, ressources);
       });
@@ -556,7 +565,7 @@
 
         const dropZone = document.createElement("div");
         dropZone.className = "drop-zone";
-        dropZone.textContent = "Glisser une ou plusieurs images ici";
+        dropZone.textContent = ""; // Zone vide mais fonctionnelle
 
         resourceContainer.appendChild(resourceTitleWrapper);
         resourceContainer.appendChild(dropZone);
