@@ -724,11 +724,16 @@
               block.appendChild(delBtn);
               block.appendChild(img);
               block.appendChild(caption);
-              // Cherche le resource-container et le drop-zone dans la cellule où a eu lieu le drop
-              const resourceContainer = e.currentTarget.querySelector(
+
+              // Toujours cibler le bon resource-container et drop-zone
+              const resourceContainer = tdRessources.querySelector(
                 ".resource-container"
               );
-              const dropZone = e.currentTarget.querySelector(".drop-zone");
+              let dropZone = resourceContainer.querySelector(".drop-zone");
+              // Si le drop-zone n'est pas le dernier enfant, on le replace
+              if (dropZone && resourceContainer.lastElementChild !== dropZone) {
+                resourceContainer.appendChild(dropZone);
+              }
               if (resourceContainer && dropZone) {
                 resourceContainer.insertBefore(block, dropZone);
               }
