@@ -724,10 +724,11 @@
               block.appendChild(delBtn);
               block.appendChild(img);
               block.appendChild(caption);
-              const resourceContainer = tdRessources.querySelector(
+              // Cherche le resource-container et le drop-zone dans la cellule où a eu lieu le drop
+              const resourceContainer = e.currentTarget.querySelector(
                 ".resource-container"
               );
-              const dropZone = tdRessources.querySelector(".drop-zone");
+              const dropZone = e.currentTarget.querySelector(".drop-zone");
               if (resourceContainer && dropZone) {
                 resourceContainer.insertBefore(block, dropZone);
               }
