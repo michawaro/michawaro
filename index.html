@@ -241,6 +241,7 @@
   </head>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
   <script>
     const SUPABASE_URL = "https://nfqaijeeozypkvkrxfwh.supabase.co"; // Remplace par ton URL
     const SUPABASE_KEY =
@@ -261,7 +262,7 @@
       const rows = [...tbody.querySelectorAll("tr")];
 
       // Préparer les nouvelles données
-      const videosData = rows.map((row) => {
+      const videosData = rows.map((row, index) => {
         const videoLink = row.querySelector("td a")?.href || "";
 
         // Récupérer les données des ressources et les convertir en JSON
@@ -305,6 +306,7 @@
           niveau: row.cells[1].innerHTML,
           contenu: row.cells[2].innerHTML,
           ressources: ressourcesJSON, // Structure JSON
+          ordre: index,
         };
       });
 
@@ -338,6 +340,7 @@
                 niveau: videoData.niveau,
                 contenu: videoData.contenu,
                 ressources: videoData.ressources, // Structure JSON
+                ordre: videoData.ordre,
               })
               .eq("id", existingData.id);
 
@@ -387,9 +390,9 @@
       // Charger les données pour cet utilisateur spécifique
       const { data, error } = await supabaseClient
         .from("videos")
-        .select("video_url, niveau, contenu, ressources")
+        .select("video_url, niveau, contenu, ressources, ordre")
         .eq("user_id", userId)
-        .order("created_at", { ascending: true });
+        .order("ordre", { ascending: true, nullsFirst: true });
 
       // LOG pour diagnostic
       console.log("Données chargées depuis Supabase :", data);
@@ -460,6 +463,14 @@
     // Attendre que le DOM soit chargé avant d'appeler loadTable
     document.addEventListener("DOMContentLoaded", function () {
       loadTable();
+      // Rends le tbody réorganisable
+      new Sortable(document.getElementById("tableBody"), {
+        animation: 150,
+        handle: "td",
+        onEnd: function () {
+          saveTable(); // Sauvegarde l'ordre après déplacement
+        },
+      });
     });
   </script>
 
