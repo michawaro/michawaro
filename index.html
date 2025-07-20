@@ -308,12 +308,20 @@
         };
       });
 
+      // LOG pour diagnostic
+      console.log(
+        "Données à sauvegarder :",
+        JSON.stringify(videosData, null, 2)
+      );
+
       // Sauvegarde incrémentale optimisée pour multi-supports
       if (videosData.length > 0) {
         let successCount = 0;
         let errorCount = 0;
 
         for (const videoData of videosData) {
+          // LOG pour chaque vidéo
+          console.log("Vidéo à sauvegarder :", videoData);
           // Vérifier si la vidéo existe déjà pour cet utilisateur
           const { data: existingData } = await supabaseClient
             .from("videos")
@@ -382,6 +390,9 @@
         .select("video_url, niveau, contenu, ressources")
         .eq("user_id", userId)
         .order("created_at", { ascending: true });
+
+      // LOG pour diagnostic
+      console.log("Données chargées depuis Supabase :", data);
 
       if (error) {
         console.warn("Pas de données Supabase ou erreur :", error.message);
