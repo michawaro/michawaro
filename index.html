@@ -67,6 +67,7 @@
 
       td[contenteditable="true"] {
         background-color: #fffdf5;
+        white-space: pre-wrap;
       }
 
       tr:hover {
@@ -301,8 +302,8 @@
         return {
           user_id: userId,
           video_url: videoLink,
-          niveau: row.cells[1].textContent,
-          contenu: row.cells[2].textContent,
+          niveau: row.cells[1].innerHTML,
+          contenu: row.cells[2].innerHTML,
           ressources: ressourcesJSON, // Structure JSON
         };
       });
@@ -559,12 +560,10 @@
   `;
 
         const tdNiveau = document.createElement("td");
-        tdNiveau.contentEditable = true;
-        tdNiveau.textContent = niveau;
+        tdNiveau.innerHTML = niveau;
 
         const tdContenu = document.createElement("td");
-        tdContenu.contentEditable = true;
-        tdContenu.textContent = contenu;
+        tdContenu.innerHTML = contenu;
 
         const tdRessources = document.createElement("td");
         const resourceContainer = document.createElement("div");
