@@ -635,7 +635,7 @@
           background: #fff;
           border-radius: 12px;
           box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
-          padding: 18px 28px;
+          padding: 10px 18px;
           display: flex;
           flex-direction: column;
           align-items: flex-start;
@@ -645,7 +645,7 @@
           color: #333;
           width: fit-content;
           min-width: 270px;
-          min-height: 180px;
+          min-height: 120px;
           height: 100%;
         "
       >
@@ -749,17 +749,17 @@
           background: #fff;
           border-radius: 12px;
           box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
-          padding: 18px 28px;
+          padding: 10px 18px;
           display: flex;
           flex-direction: column;
-          align-items: flex-start;
+          align-items: center;
           gap: 12px;
           font-family: inherit;
           font-size: 1.08em;
           color: #333;
           width: fit-content;
           min-width: 270px;
-          min-height: 180px;
+          min-height: 120px;
           height: 100%;
         "
       >
@@ -781,16 +781,24 @@
         >
           MOT DE PASSE<br />
         </div>
-        <a
-          href="#"
-          onclick="demanderMotDePasse(); return false;"
-          style="color: #e84e9b; text-decoration: underline; cursor: pointer"
-        >
-          Je demande mon mot de passe<br />pour accéder aux documents sécurisés
-        </a>
-        <div style="font-size: 0.95em; color: #888; margin-top: 2px">
-          Mail académique (ne sera ni conservé ni utilisé à des fins
-          publicitaires)
+        <div style="text-align: center; width: 100%">
+          <a
+            href="#"
+            onclick="demanderMotDePasse(); return false;"
+            style="
+              color: #e84e9b;
+              text-decoration: underline;
+              cursor: pointer;
+              display: inline-block;
+            "
+          >
+            Je demande mon mot de passe<br />pour accéder aux documents
+            sécurisés
+          </a>
+          <div style="font-size: 0.95em; color: #888; margin-top: 2px">
+            Mail académique (ne sera ni conservé ni utilisé à des fins
+            publicitaires)
+          </div>
         </div>
       </div>
     </div>
