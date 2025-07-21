@@ -618,162 +618,173 @@
       </button>
     </div>
 
-    <!-- Cartouche de filtre Niveau + Contenu -->
+    <!-- Conteneur flex pour les deux cartouches -->
     <div
-      id="niveau-filter"
       style="
-        background: #fff;
-        border-radius: 12px;
-        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
-        padding: 18px 28px;
-        margin: 18px 5vw 10px 5vw;
         display: flex;
-        flex-direction: column;
+        flex-wrap: wrap;
+        gap: 24px;
         align-items: flex-start;
-        gap: 12px;
-        font-family: inherit;
-        font-size: 1.08em;
-        color: #333;
-        width: fit-content;
+        margin: 18px 5vw 10px 5vw;
       "
     >
+      <!-- Cartouche de filtre Niveau + Contenu -->
       <div
+        id="niveau-filter"
         style="
-          width: calc(100% + 56px); /* pour couvrir le padding horizontal */
-          margin-left: -28px;
-          margin-top: -18px;
-          margin-bottom: 12px;
-          padding: 12px 0;
-          background: linear-gradient(135deg, #e84e9b 40%, #fce86e 100%);
-          color: white;
-          border-radius: 12px 12px 0 0;
-          text-align: center;
-          font-weight: bold;
-          font-size: 1.15em;
-          letter-spacing: 2px;
-        "
-      >
-        FILTRES
-      </div>
-      <div
-        style="
+          background: #fff;
+          border-radius: 12px;
+          box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+          padding: 18px 28px;
           display: flex;
-          align-items: center;
-          gap: 18px;
-          margin-bottom: 2px;
+          flex-direction: column;
+          align-items: flex-start;
+          gap: 12px;
+          font-family: inherit;
+          font-size: 1.08em;
+          color: #333;
+          width: fit-content;
+          min-width: 270px;
         "
       >
-        <span style="font-weight: bold; margin-right: 10px">Niveau :</span>
-        <label style="display: flex; align-items: center; gap: 4px">
-          <input
-            type="checkbox"
-            class="niveau-checkbox"
-            value="Lycée"
-            checked
-            style="accent-color: #e84e9b; width: 18px; height: 18px"
-          />
-          Lycée
-        </label>
-        <label style="display: flex; align-items: center; gap: 4px">
-          <input
-            type="checkbox"
-            class="niveau-checkbox"
-            value="Collège"
-            checked
-            style="accent-color: #89d6e2; width: 18px; height: 18px"
-          />
-          Collège
-        </label>
-        <label style="display: flex; align-items: center; gap: 4px">
-          <input
-            type="checkbox"
-            class="niveau-checkbox"
-            value="Enseignants"
-            checked
-            style="accent-color: #fce86e; width: 18px; height: 18px"
-          />
-          Enseignants
-        </label>
+        <div
+          style="
+            width: calc(100% + 56px); /* pour couvrir le padding horizontal */
+            margin-left: -28px;
+            margin-top: -18px;
+            margin-bottom: 12px;
+            padding: 12px 0;
+            background: linear-gradient(135deg, #e84e9b 40%, #fce86e 100%);
+            color: white;
+            border-radius: 12px 12px 0 0;
+            text-align: center;
+            font-weight: bold;
+            font-size: 1.15em;
+            letter-spacing: 2px;
+          "
+        >
+          FILTRES
+        </div>
+        <div
+          style="
+            display: flex;
+            align-items: center;
+            gap: 18px;
+            margin-bottom: 2px;
+          "
+        >
+          <span style="font-weight: bold; margin-right: 10px">Niveau :</span>
+          <label style="display: flex; align-items: center; gap: 4px">
+            <input
+              type="checkbox"
+              class="niveau-checkbox"
+              value="Lycée"
+              checked
+              style="accent-color: #e84e9b; width: 18px; height: 18px"
+            />
+            Lycée
+          </label>
+          <label style="display: flex; align-items: center; gap: 4px">
+            <input
+              type="checkbox"
+              class="niveau-checkbox"
+              value="Collège"
+              checked
+              style="accent-color: #89d6e2; width: 18px; height: 18px"
+            />
+            Collège
+          </label>
+          <label style="display: flex; align-items: center; gap: 4px">
+            <input
+              type="checkbox"
+              class="niveau-checkbox"
+              value="Enseignants"
+              checked
+              style="accent-color: #fce86e; width: 18px; height: 18px"
+            />
+            Enseignants
+          </label>
+        </div>
+        <div style="display: flex; align-items: center; gap: 18px">
+          <span style="font-weight: bold; margin-right: 10px">Contenu :</span>
+          <label style="display: flex; align-items: center; gap: 4px">
+            <input
+              type="checkbox"
+              class="contenu-checkbox"
+              value="Méthodologie"
+              checked
+              style="accent-color: #e84e9b; width: 18px; height: 18px"
+            />
+            Méthodologie
+          </label>
+          <label style="display: flex; align-items: center; gap: 4px">
+            <input
+              type="checkbox"
+              class="contenu-checkbox"
+              value="Pédagogie"
+              checked
+              style="accent-color: #89d6e2; width: 18px; height: 18px"
+            />
+            Pédagogie
+          </label>
+          <label style="display: flex; align-items: center; gap: 4px">
+            <input
+              type="checkbox"
+              class="contenu-checkbox"
+              value="Cours"
+              checked
+              style="accent-color: #fce86e; width: 18px; height: 18px"
+            />
+            Cours
+          </label>
+        </div>
       </div>
-      <div style="display: flex; align-items: center; gap: 18px">
-        <span style="font-weight: bold; margin-right: 10px">Contenu :</span>
-        <label style="display: flex; align-items: center; gap: 4px">
-          <input
-            type="checkbox"
-            class="contenu-checkbox"
-            value="Méthodologie"
-            checked
-            style="accent-color: #e84e9b; width: 18px; height: 18px"
-          />
-          Méthodologie
-        </label>
-        <label style="display: flex; align-items: center; gap: 4px">
-          <input
-            type="checkbox"
-            class="contenu-checkbox"
-            value="Pédagogie"
-            checked
-            style="accent-color: #89d6e2; width: 18px; height: 18px"
-          />
-          Pédagogie
-        </label>
-        <label style="display: flex; align-items: center; gap: 4px">
-          <input
-            type="checkbox"
-            class="contenu-checkbox"
-            value="Cours"
-            checked
-            style="accent-color: #fce86e; width: 18px; height: 18px"
-          />
-          Cours
-        </label>
-      </div>
-    </div>
 
-    <!-- Cartouche Mot de passe -->
-    <div
-      id="motdepasse-cartouche"
-      style="
-        background: #fff;
-        border-radius: 12px;
-        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
-        padding: 18px 28px;
-        margin: 18px 5vw 10px 5vw;
-        display: flex;
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 12px;
-        font-family: inherit;
-        font-size: 1.08em;
-        color: #333;
-        width: fit-content;
-      "
-    >
+      <!-- Cartouche Mot de passe -->
       <div
+        id="motdepasse-cartouche"
         style="
-          width: calc(100% + 56px);
-          margin-left: -28px;
-          margin-top: -18px;
-          margin-bottom: 12px;
-          padding: 12px 0;
-          background: linear-gradient(135deg, #e84e9b 40%, #fce86e 100%);
-          color: white;
-          border-radius: 12px 12px 0 0;
-          text-align: center;
-          font-weight: bold;
-          font-size: 1.15em;
-          letter-spacing: 2px;
+          background: #fff;
+          border-radius: 12px;
+          box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+          padding: 18px 28px;
+          display: flex;
+          flex-direction: column;
+          align-items: flex-start;
+          gap: 12px;
+          font-family: inherit;
+          font-size: 1.08em;
+          color: #333;
+          width: fit-content;
+          min-width: 270px;
         "
       >
-        MOT DE PASSE
+        <div
+          style="
+            width: calc(100% + 56px);
+            margin-left: -28px;
+            margin-top: -18px;
+            margin-bottom: 12px;
+            padding: 12px 0;
+            background: linear-gradient(135deg, #e84e9b 40%, #fce86e 100%);
+            color: white;
+            border-radius: 12px 12px 0 0;
+            text-align: center;
+            font-weight: bold;
+            font-size: 1.15em;
+            letter-spacing: 2px;
+          "
+        >
+          MOT DE PASSE<br />
+        </div>
+        <a
+          href="#"
+          onclick="demanderMotDePasse(); return false;"
+          style="color: #e84e9b; text-decoration: underline; cursor: pointer"
+        >
+          Je demande mon mot de passe pour accéder aux documents sécurisés
+        </a>
       </div>
-      <a
-        href="#"
-        onclick="demanderMotDePasse(); return false;"
-        style="color: #e84e9b; text-decoration: underline; cursor: pointer"
-      >
-        Je demande mon mot de passe pour accéder aux documents sécurisés
-      </a>
     </div>
 
     <main>
