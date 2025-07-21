@@ -101,6 +101,7 @@
         display: flex;
         flex-direction: column;
         align-items: center;
+        justify-content: flex-end;
         position: relative;
         max-width: 140px;
         background: #fff;
@@ -132,8 +133,8 @@
         height: auto;
         border-radius: 6px;
         display: block;
-        margin-left: 2px;
-        margin-right: 2px;
+        margin-left: auto;
+        margin-right: auto;
       }
 
       .delete-btn {
@@ -192,9 +193,10 @@
         outline: none;
         width: 100%;
         color: black;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
+        white-space: normal;
+        overflow: auto;
+        text-overflow: unset;
+        max-height: 2.8em;
       }
 
       .resource-title {
