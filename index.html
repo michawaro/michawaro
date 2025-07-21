@@ -462,12 +462,6 @@
     async function loadTable() {
       await loadFromSupabase();
     }
-
-    // Attendre que le DOM soit chargé avant d'appeler loadTable
-    document.addEventListener("DOMContentLoaded", function () {
-      loadTable();
-      // Le tri sera activé seulement après connexion
-    });
   </script>
 
   <body>
@@ -912,7 +906,6 @@
         document.getElementById("ressources").value = "";
       }
 
-      loadTable();
       tbody.addEventListener("focusout", saveTable);
 
       // Fonction pour désactiver l'édition sans masquer l'interface
@@ -948,16 +941,24 @@
         });
 
         // Désactiver le tri des lignes
-        const sortableInstance = Sortable.get(
-          document.getElementById("tableBody")
-        );
-        if (sortableInstance) {
-          sortableInstance.destroy();
+        const tableBody = document.getElementById("tableBody");
+        if (tableBody) {
+          const sortableInstance = Sortable.get(tableBody);
+          if (sortableInstance) {
+            sortableInstance.destroy();
+          }
         }
 
         // Masquer le bouton sauvegarder et le formulaire d'ajout
-        document.getElementById("saveBtn").style.display = "none";
-        document.getElementById("add-video-form").style.display = "none";
+        const saveBtn = document.getElementById("saveBtn");
+        const addVideoForm = document.getElementById("add-video-form");
+
+        if (saveBtn) {
+          saveBtn.style.display = "none";
+        }
+        if (addVideoForm) {
+          addVideoForm.style.display = "none";
+        }
       }
 
       // Fonction pour activer l'édition
@@ -993,21 +994,37 @@
         });
 
         // Réactiver le tri des lignes
-        new Sortable(document.getElementById("tableBody"), {
-          animation: 150,
-          handle: "td",
-          onEnd: function () {
-            saveTable();
-          },
-        });
+        const tableBody = document.getElementById("tableBody");
+        if (tableBody) {
+          new Sortable(tableBody, {
+            animation: 150,
+            handle: "td",
+            onEnd: function () {
+              saveTable();
+            },
+          });
+        }
 
         // Afficher le bouton sauvegarder et le formulaire d'ajout
-        document.getElementById("saveBtn").style.display = "inline-block";
-        document.getElementById("add-video-form").style.display = "block";
+        const saveBtn = document.getElementById("saveBtn");
+        const addVideoForm = document.getElementById("add-video-form");
+
+        if (saveBtn) {
+          saveBtn.style.display = "inline-block";
+        }
+        if (addVideoForm) {
+          addVideoForm.style.display = "block";
+        }
       }
 
-      // Désactiver l'édition par défaut
-      disableEditing();
+      // Désactiver l'édition par défaut après le chargement complet
+      document.addEventListener("DOMContentLoaded", function () {
+        loadTable();
+        // Le tri sera activé seulement après connexion
+        setTimeout(() => {
+          disableEditing();
+        }, 100);
+      });
 
       // Fonction de chiffrement simple
       function encrypt(text) {
@@ -1029,8 +1046,8 @@
             const expectedPassword = encrypt("4480Svt4426");
             if (password && encrypt(password.trim()) === expectedPassword) {
               document.getElementById("userId").value = userId.trim();
-              enableEditing();
               await loadFromSupabase();
+              enableEditing();
             } else {
               alert("Mot de passe incorrect. Accès refusé.");
               document.getElementById("userId").value = "";
