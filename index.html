@@ -89,9 +89,10 @@
         display: flex;
         flex-wrap: wrap;
         justify-content: center;
-        align-items: flex-end; /* Aligne les titres verticalement par rapport au plus bas */
+        align-items: flex-end;
         gap: 8px;
-        padding: 8px;
+        padding: 0;
+        margin: 0;
         background: #fafafa;
         border-radius: 6px;
       }
@@ -103,11 +104,11 @@
         position: relative;
         max-width: 140px;
         background: #fff;
-        padding: 2px 2px;
+        padding: 0;
         border: 1px solid #ccc;
         border-radius: 6px;
         transition: box-shadow 0.3s;
-        flex-grow: 1; /* Permet aux boîtes de s'étendre uniformément */
+        flex-grow: 1;
         margin: 0;
       }
 
@@ -116,6 +117,8 @@
         height: auto;
         border-radius: 4px;
         margin: 0;
+        padding: 0;
+        display: block;
       }
 
       /* Réduction de 30% de la taille des vignettes YouTube */
@@ -177,6 +180,7 @@
 
       .image-title {
         margin: 0;
+        padding: 0;
         font-size: 0.85em;
         text-align: center;
         outline: none;
@@ -191,13 +195,16 @@
         text-align: center;
         outline: none;
         color: black;
+        margin: 0;
+        padding: 0;
       }
 
       .resource-title-wrapper {
-        width: 100%; /* Le titre occupe toute la largeur du conteneur */
-        text-align: center; /* Centre le texte du titre */
-        margin-bottom: 8px; /* Ajoute un espace entre le titre et les images */
-        position: relative; /* Nécessaire pour positionner la coche */
+        width: 100%;
+        text-align: center;
+        margin: 0;
+        padding: 0;
+        position: relative;
       }
 
       .drop-zone {
@@ -205,6 +212,9 @@
         color: #999;
         width: 100%;
         text-align: center;
+        margin: 0;
+        padding: 0;
+        min-height: 0;
       }
 
       .form-container {
