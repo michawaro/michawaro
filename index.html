@@ -670,6 +670,120 @@
     >
       <!-- Cartouche de filtre Niveau + Contenu -->
       <div class="cartouche" id="niveau-filter">
+        <div class="cartouche-header" style="background: linear-gradient(90deg, #fce86e 0%, #e84e9b 100%)">
+          FILTRES
+        </div>
+        <div class="cartouche-content">
+          <!-- contenu du cartouche filtre (copié depuis l'ancien) -->
+          <div
+            style="
+              display: flex;
+              align-items: center;
+              gap: 18px;
+              margin-bottom: 2px;
+            "
+          >
+            <span style="font-weight: bold; margin-right: 10px">Niveau :</span>
+            <label style="display: flex; align-items: center; gap: 4px">
+              <input
+                type="checkbox"
+                class="niveau-checkbox"
+                value="Lycée"
+                checked
+                style="accent-color: #e84e9b; width: 18px; height: 18px"
+              />
+              Lycée
+            </label>
+            <label style="display: flex; align-items: center; gap: 4px">
+              <input
+                type="checkbox"
+                class="niveau-checkbox"
+                value="Collège"
+                style="accent-color: #e84e9b; width: 18px; height: 18px"
+              />
+              Collège
+            </label>
+          </div>
+
+          <div
+            style="
+              display: flex;
+              align-items: center;
+              gap: 18px;
+              margin: 10px 0;
+            "
+          >
+            <span style="font-weight: bold; margin-right: 10px">Contenu :</span>
+            <label style="display: flex; align-items: center; gap: 4px">
+              <input
+                type="checkbox"
+                class="contenu-checkbox"
+                value="COURS"
+                checked
+                style="accent-color: #e84e9b; width: 18px; height: 18px"
+              />
+              Cours
+            </label>
+            <label style="display: flex; align-items: center; gap: 4px">
+              <input
+                type="checkbox"
+                class="contenu-checkbox"
+                value="MÉTHODOLOGIE"
+                checked
+                style="accent-color: #e84e9b; width: 18px; height: 18px"
+              />
+              Méthodologie
+            </label>
+            <label style="display: flex; align-items: center; gap: 4px">
+              <input
+                type="checkbox"
+                class="contenu-checkbox"
+                value="PÉDAGOGIE"
+                checked
+                style="accent-color: #e84e9b; width: 18px; height: 18px"
+              />
+              Pédagogie
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <!-- Cartouche de mot de passe -->
+      <div class="cartouche" id="password-cartouche">
+        <div class="cartouche-header" style="background: linear-gradient(90deg, #e84e9b 0%, #fce86e 100%)">
+          MOT DE PASSE
+        </div>
+        <div class="cartouche-content">
+          <button
+            onclick="demanderMotDePasse()"
+            style="
+              background: #89d6e2;
+              color: #fff;
+              border: none;
+              border-radius: 6px;
+              padding: 7px 16px;
+              font-weight: bold;
+              cursor: pointer;
+              font-family: inherit;
+              font-size: 1em;
+              width: 100%;
+              margin-bottom: 8px;
+            "
+          >
+            📧 Recevoir le mot de passe
+          </button>
+          <p style="font-size: 0.8em; color: #666; margin: 0; text-align: center">
+            Besoin d'aide pour utiliser le mot de passe ?
+            <a
+              href="https://youtu.be/LnpteggdkxU?si=IXWg0mrRBx4VuMTJ"
+              target="_blank"
+              style="color: #89d6e2; text-decoration: none"
+            >
+              Regarde cette vidéo
+            </a>
+          </p>
+        </div>
+      </div>
         <div
           class="cartouche-header"
           style="background: linear-gradient(90deg, #fce86e 0%, #e84e9b 100%)"
