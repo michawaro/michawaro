@@ -1259,8 +1259,77 @@
         disableEditing();
       }
 
+      // Style pour la fenêtre de confirmation
+      const style = document.createElement('style');
+      style.textContent = `
+        .confirmation-dialog {
+          position: absolute;
+          bottom: 100%;
+          left: 50%;
+          transform: translateX(-50%);
+          background: white;
+          padding: 15px;
+          border-radius: 8px;
+          box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+          z-index: 1000;
+          display: none;
+        }
+        .confirmation-dialog p {
+          margin: 0 0 10px 0;
+          color: #333;
+        }
+        .confirmation-dialog button {
+          padding: 5px 15px;
+          margin: 0 5px;
+          border: none;
+          border-radius: 4px;
+          cursor: pointer;
+          font-weight: bold;
+        }
+        .confirmation-dialog .yes-btn {
+          background: #e84e9b;
+          color: white;
+        }
+        .confirmation-dialog .no-btn {
+          background: #f0f0f0;
+          color: #333;
+        }
+      `;
+      document.head.appendChild(style);
+
+      // Créer la fenêtre de confirmation
+      const saveBtn = document.getElementById('saveBtn');
+      if (saveBtn) {
+        const confirmationDialog = document.createElement('div');
+        confirmationDialog.className = 'confirmation-dialog';
+        confirmationDialog.innerHTML = `
+          <p>C'est fait Bro, rester connecté ?</p>
+          <button class="yes-btn" onclick="closeConfirmationDialog()">Oui</button>
+          <button class="no-btn" onclick="logout()">Non</button>
+        `;
+        saveBtn.parentNode.insertBefore(confirmationDialog, saveBtn);
+
+        // Fonction pour afficher la fenêtre
+        function showConfirmationDialog() {
+          const dialog = document.querySelector('.confirmation-dialog');
+          if (dialog) {
+            dialog.style.display = 'block';
+          }
+        }
+
+        // Fonction pour fermer la fenêtre
+        function closeConfirmationDialog() {
+          const dialog = document.querySelector('.confirmation-dialog');
+          if (dialog) {
+            dialog.style.display = 'none';
+          }
+        }
+      }
+
       document.getElementById("saveBtn").onclick = async function () {
         await saveToSupabase();
+        // Afficher la fenêtre de confirmation après la sauvegarde
+        showConfirmationDialog();
       };
     </script>
     <!-- --- FILTRE NIVEAU + CONTENU --- -->
