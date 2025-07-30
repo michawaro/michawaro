@@ -1191,7 +1191,15 @@
 
       // Désactiver l'édition par défaut après le chargement complet
       document.addEventListener("DOMContentLoaded", function () {
-        checkSession();
+        // Vérifier la session au chargement
+        const encryptedUserId = localStorage.getItem('adminUserId');
+        if (encryptedUserId) {
+          const userId = decrypt(encryptedUserId);
+          document.getElementById("userId").value = userId;
+          enableEditing();
+        } else {
+          disableEditing();
+        }
         loadTable();
         // Le tri sera activé seulement après connexion
         setTimeout(() => {
@@ -1199,15 +1207,9 @@
         }, 100);
       });
 
-      // Vérifier si l'utilisateur est déjà connecté au chargement
-      function checkSession() {
-        const savedUserId = localStorage.getItem('adminUserId');
-        if (savedUserId) {
-          document.getElementById("userId").value = savedUserId;
-          enableEditing();
-        } else {
-          disableEditing();
-        }
+      // Fonction de chiffrement simple
+      function encrypt(text) {
+        return btoa(text.split("").reverse().join(""));
       }
 
       function decrypt(encrypted) {
@@ -1224,13 +1226,15 @@
             const password = prompt("Veuillez entrer votre mot de passe :");
             const expectedPassword = encrypt("4480Svt4426");
             if (password && encrypt(password.trim()) === expectedPassword) {
-              // Sauvegarder l'ID dans localStorage
-              localStorage.setItem('adminUserId', userId.trim());
+              // Chiffrer l'ID avant de le sauvegarder
+              const encryptedUserId = encrypt(userId.trim());
+              localStorage.setItem('adminUserId', encryptedUserId);
               document.getElementById("userId").value = userId.trim();
               await loadFromSupabase();
               enableEditing();
             } else {
               alert("Mot de passe incorrect. Accès refusé.");
+              // Supprimer l'ID chiffré du localStorage
               localStorage.removeItem('adminUserId');
               document.getElementById("userId").value = "";
               disableEditing();
@@ -1239,6 +1243,7 @@
             alert(
               "Identifiant non autorisé. Seul l'administrateur peut accéder à cette page."
             );
+            // Supprimer l'ID chiffré du localStorage
             localStorage.removeItem('adminUserId');
             document.getElementById("userId").value = "";
             disableEditing();
@@ -1246,8 +1251,9 @@
         }
       };
 
-      // Déconnexion
+      // Fonction de déconnexion
       function logout() {
+        // Supprimer l'ID chiffré du localStorage
         localStorage.removeItem('adminUserId');
         document.getElementById("userId").value = "";
         disableEditing();
