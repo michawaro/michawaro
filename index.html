@@ -1191,6 +1191,7 @@
 
       // Désactiver l'édition par défaut après le chargement complet
       document.addEventListener("DOMContentLoaded", function () {
+        checkSession();
         loadTable();
         // Le tri sera activé seulement après connexion
         setTimeout(() => {
@@ -1198,9 +1199,15 @@
         }, 100);
       });
 
-      // Fonction de chiffrement simple
-      function encrypt(text) {
-        return btoa(text.split("").reverse().join(""));
+      // Vérifier si l'utilisateur est déjà connecté au chargement
+      function checkSession() {
+        const savedUserId = localStorage.getItem('adminUserId');
+        if (savedUserId) {
+          document.getElementById("userId").value = savedUserId;
+          enableEditing();
+        } else {
+          disableEditing();
+        }
       }
 
       function decrypt(encrypted) {
@@ -1217,11 +1224,14 @@
             const password = prompt("Veuillez entrer votre mot de passe :");
             const expectedPassword = encrypt("4480Svt4426");
             if (password && encrypt(password.trim()) === expectedPassword) {
+              // Sauvegarder l'ID dans localStorage
+              localStorage.setItem('adminUserId', userId.trim());
               document.getElementById("userId").value = userId.trim();
               await loadFromSupabase();
               enableEditing();
             } else {
               alert("Mot de passe incorrect. Accès refusé.");
+              localStorage.removeItem('adminUserId');
               document.getElementById("userId").value = "";
               disableEditing();
             }
@@ -1229,11 +1239,19 @@
             alert(
               "Identifiant non autorisé. Seul l'administrateur peut accéder à cette page."
             );
+            localStorage.removeItem('adminUserId');
             document.getElementById("userId").value = "";
             disableEditing();
           }
         }
       };
+
+      // Déconnexion
+      function logout() {
+        localStorage.removeItem('adminUserId');
+        document.getElementById("userId").value = "";
+        disableEditing();
+      }
 
       document.getElementById("saveBtn").onclick = async function () {
         await saveToSupabase();
