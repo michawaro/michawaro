@@ -1264,17 +1264,15 @@
       style.textContent = `
         .confirmation-dialog {
           position: absolute;
-          bottom: 100%;
-          left: 50%;
-          transform: translateX(-50%);
-          background: white;
+          top: 100%;
+          left: 0;
+          background: #e8f5e9; /* Vert pâle */
           padding: 15px;
           border-radius: 8px;
           box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
           z-index: 1000;
           display: none;
-          position: fixed;
-          bottom: 80px;
+          min-width: 200px;
         }
         .confirmation-dialog p {
           margin: 0 0 10px 0;
@@ -1289,47 +1287,56 @@
           font-weight: bold;
         }
         .confirmation-dialog .yes-btn {
-          background: #e84e9b;
+          background: #4caf50;
           color: white;
         }
         .confirmation-dialog .no-btn {
-          background: #f0f0f0;
-          color: #333;
+          background: #8bc34a;
+          color: white;
         }
       `;
       document.head.appendChild(style);
 
       // Créer la fenêtre de confirmation
       const saveBtn = document.getElementById('saveBtn');
-      const confirmationDialog = document.createElement('div');
-      confirmationDialog.className = 'confirmation-dialog';
-      confirmationDialog.innerHTML = `
-        <p>C'est fait Bro, rester connecté ?</p>
-        <button class="yes-btn" onclick="closeConfirmationDialog()">Oui</button>
-        <button class="no-btn" onclick="logout()">Non</button>
-      `;
-      document.body.appendChild(confirmationDialog);
+      if (saveBtn) {
+        const confirmationDialog = document.createElement('div');
+        confirmationDialog.className = 'confirmation-dialog';
+        confirmationDialog.innerHTML = `
+          <p>C'est fait Bro, rester connecté ?</p>
+          <button class="yes-btn" onclick="closeConfirmationDialog()">Oui</button>
+          <button class="no-btn" onclick="closeConfirmationDialog()">Non</button>
+        `;
+        
+        // Positionner la fenêtre juste après le bouton
+        saveBtn.parentNode.insertBefore(confirmationDialog, saveBtn.nextSibling);
 
-      // Fonction pour afficher la fenêtre
-      function showConfirmationDialog() {
-        const dialog = document.querySelector('.confirmation-dialog');
-        if (dialog) {
-          dialog.style.display = 'block';
+        // Fonction pour afficher la fenêtre
+        function showConfirmationDialog() {
+          const dialog = document.querySelector('.confirmation-dialog');
+          if (dialog) {
+            dialog.style.display = 'block';
+          }
         }
-      }
 
-      // Fonction pour fermer la fenêtre
-      function closeConfirmationDialog() {
-        const dialog = document.querySelector('.confirmation-dialog');
-        if (dialog) {
-          dialog.style.display = 'none';
+        // Fonction pour fermer la fenêtre
+        function closeConfirmationDialog() {
+          const dialog = document.querySelector('.confirmation-dialog');
+          if (dialog) {
+            dialog.style.display = 'none';
+            // Si le bouton "Non" a été cliqué, déconnecter
+            const button = event.target;
+            if (button && button.classList.contains('no-btn')) {
+              logout();
+            }
+          }
         }
       }
 
       document.getElementById("saveBtn").onclick = async function () {
         await saveToSupabase();
         // Afficher la fenêtre de confirmation après la sauvegarde
-        setTimeout(showConfirmationDialog, 500); // Attente de 500ms pour s'assurer que la sauvegarde est terminée
+        setTimeout(showConfirmationDialog, 500);
       };
     </script>
     <!-- --- FILTRE NIVEAU + CONTENU --- -->
