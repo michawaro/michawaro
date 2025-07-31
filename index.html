@@ -1264,8 +1264,6 @@
       style.textContent = `
         .confirmation-dialog {
           position: absolute;
-          top: 100%;
-          left: 0;
           background: #e8f5e9; /* Vert pâle */
           padding: 15px;
           border-radius: 8px;
@@ -1318,11 +1316,17 @@
           logout();
         });
 
-        // Insérer la fenêtre juste après le bouton sauvegarder
+        // Insérer la fenêtre dans le body
+        document.body.appendChild(confirmationDialog);
+        
+        // Positionner la fenêtre juste sous le bouton sauvegarder
         const saveBtn = document.getElementById('saveBtn');
         if (saveBtn) {
-          saveBtn.parentNode.insertBefore(confirmationDialog, saveBtn.nextSibling);
-          confirmationDialog.style.display = 'block';
+          const rect = saveBtn.getBoundingClientRect();
+          const style = confirmationDialog.style;
+          style.display = 'block';
+          style.top = (rect.top + rect.height + window.scrollY) + 'px';
+          style.left = (rect.left + window.scrollX) + 'px';
         }
       }
 
