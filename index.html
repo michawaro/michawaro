@@ -1297,9 +1297,9 @@
       `;
       document.head.appendChild(style);
 
-      // Créer la fenêtre de confirmation
-      const saveBtn = document.getElementById('saveBtn');
-      if (saveBtn) {
+      // Fonction pour créer et afficher la fenêtre de confirmation
+      function showConfirmationDialog() {
+        // Créer la fenêtre
         const confirmationDialog = document.createElement('div');
         confirmationDialog.className = 'confirmation-dialog';
         confirmationDialog.innerHTML = `
@@ -1308,34 +1308,37 @@
           <button class="no-btn" onclick="closeConfirmationDialog()">Non</button>
         `;
         
-        // Positionner la fenêtre juste après le bouton
-        saveBtn.parentNode.insertBefore(confirmationDialog, saveBtn.nextSibling);
+        // Ajouter les écouteurs d'événements pour les boutons
+        const yesBtn = confirmationDialog.querySelector('.yes-btn');
+        const noBtn = confirmationDialog.querySelector('.no-btn');
+        
+        yesBtn.addEventListener('click', closeConfirmationDialog);
+        noBtn.addEventListener('click', function() {
+          closeConfirmationDialog();
+          logout();
+        });
 
-        // Fonction pour afficher la fenêtre
-        function showConfirmationDialog() {
-          const dialog = document.querySelector('.confirmation-dialog');
-          if (dialog) {
-            dialog.style.display = 'block';
-          }
+        // Insérer la fenêtre juste après le bouton sauvegarder
+        const saveBtn = document.getElementById('saveBtn');
+        if (saveBtn) {
+          saveBtn.parentNode.insertBefore(confirmationDialog, saveBtn.nextSibling);
+          confirmationDialog.style.display = 'block';
         }
+      }
 
-        // Fonction pour fermer la fenêtre
-        function closeConfirmationDialog() {
-          const dialog = document.querySelector('.confirmation-dialog');
-          if (dialog) {
-            dialog.style.display = 'none';
-            // Si le bouton "Non" a été cliqué, déconnecter
-            const button = event.target;
-            if (button && button.classList.contains('no-btn')) {
-              logout();
-            }
-          }
+      // Fonction pour fermer la fenêtre
+      function closeConfirmationDialog() {
+        const dialog = document.querySelector('.confirmation-dialog');
+        if (dialog) {
+          dialog.style.display = 'none';
+          // Supprimer la fenêtre après fermeture
+          dialog.remove();
         }
       }
 
       document.getElementById("saveBtn").onclick = async function () {
         await saveToSupabase();
-        // Afficher la fenêtre de confirmation après la sauvegarde
+        // Créer et afficher la fenêtre de confirmation après la sauvegarde
         setTimeout(showConfirmationDialog, 500);
       };
     </script>
