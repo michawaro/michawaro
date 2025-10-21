@@ -409,7 +409,7 @@
       /* Styles pour les drapeaux */
       .flag-container {
         position: absolute;
-        bottom: 5px;
+        top: 5px;
         right: 5px;
         z-index: 5;
         pointer-events: auto; /* Permet de cliquer sur le conteneur */
@@ -1027,14 +1027,16 @@
         flag.style.cursor = "pointer";
         flag.style.pointerEvents = "auto"; // S'assurer que les clics fonctionnent
         flag.style.zIndex = "10"; // S'assurer que le drapeau est au-dessus
-        flag.onclick = (e) => {
+        flag.title += ` - ${url}`;
+        flag.dataset.url = url; // Stocker l'URL dans le dataset
+
+        // Attacher l'événement click avec addEventListener pour plus de fiabilité
+        flag.addEventListener("click", (e) => {
           e.stopPropagation();
           e.preventDefault();
           console.log("Clic sur drapeau, URL:", url);
           window.open(url, "_blank");
-        };
-        flag.title += ` - ${url}`;
-        flag.dataset.url = url; // Stocker l'URL dans le dataset
+        });
       }
 
       flagContainer.appendChild(flag);
@@ -1091,12 +1093,19 @@
           flag.style.cursor = "pointer";
           flag.style.pointerEvents = "auto";
           flag.style.zIndex = "10";
-          flag.onclick = (e) => {
+
+          // Supprimer l'ancien event listener s'il existe
+          flag.removeEventListener("click", flag._clickHandler);
+
+          // Créer et attacher le nouvel event listener
+          flag._clickHandler = (e) => {
             e.stopPropagation();
             e.preventDefault();
             console.log("Clic sur drapeau modifié, URL:", newUrl.trim());
             window.open(newUrl.trim(), "_blank");
           };
+          flag.addEventListener("click", flag._clickHandler);
+
           flag.title = `${
             type === "english" ? "Anglais" : "Espagnol"
           } - ${newUrl.trim()}`;
@@ -1105,7 +1114,11 @@
           flag.style.cursor = "default";
           flag.style.pointerEvents = "auto";
           flag.style.zIndex = "10";
-          flag.onclick = null;
+
+          // Supprimer l'event listener
+          flag.removeEventListener("click", flag._clickHandler);
+          flag._clickHandler = null;
+
           flag.title = type === "english" ? "Anglais" : "Espagnol";
           flag.dataset.url = "";
         }
