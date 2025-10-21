@@ -787,16 +787,6 @@
       }
     }
 
-    // Fonction séparée pour gérer les boutons après chargement
-    function applyButtonState() {
-      const encryptedUserId = localStorage.getItem("adminUserId");
-      if (encryptedUserId) {
-        enableEditing();
-      } else {
-        disableEditing();
-      }
-    }
-
     // Fonction pour supprimer une ligne côté Supabase
     async function deleteRowFromSupabase(videoUrl) {
       const userIdElement = document.getElementById("userId");
@@ -1754,19 +1744,21 @@
       }
 
       // Désactiver l'édition par défaut après le chargement complet
-      document.addEventListener("DOMContentLoaded", async function () {
+      document.addEventListener("DOMContentLoaded", function () {
+        // Charger les données en mode public par défaut
+        loadTable();
+
         // Vérifier la session au chargement
         const encryptedUserId = localStorage.getItem("adminUserId");
         if (encryptedUserId) {
           const userId = decrypt(encryptedUserId);
           document.getElementById("userId").value = userId;
+          // Activer l'édition seulement si connecté
+          setTimeout(() => enableEditing(), 100);
+        } else {
+          // Désactiver l'édition après que les boutons soient créés
+          setTimeout(() => disableEditing(), 100);
         }
-
-        // Charger les données d'abord
-        await loadTable();
-
-        // Puis appliquer l'état des boutons
-        applyButtonState();
       });
 
       // Fonction de chiffrement simple
