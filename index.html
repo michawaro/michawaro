@@ -782,6 +782,14 @@
       try {
         await loadFromSupabase();
         console.log("Chargement terminé");
+
+        // Appliquer les restrictions d'édition après le chargement
+        const encryptedUserId = localStorage.getItem("adminUserId");
+        if (encryptedUserId) {
+          enableEditing();
+        } else {
+          disableEditing();
+        }
       } finally {
         isLoading = false;
       }
@@ -987,7 +995,12 @@
       // Si une URL est fournie, rendre le drapeau cliquable
       if (url) {
         flag.style.cursor = "pointer";
-        flag.onclick = () => window.open(url, "_blank");
+        flag.style.pointerEvents = "auto"; // S'assurer que les clics fonctionnent
+        flag.onclick = (e) => {
+          e.stopPropagation();
+          e.preventDefault();
+          window.open(url, "_blank");
+        };
         flag.title += ` - ${url}`;
         flag.dataset.url = url; // Stocker l'URL dans le dataset
       }
@@ -1044,13 +1057,19 @@
       if (newUrl !== null) {
         if (newUrl.trim()) {
           flag.style.cursor = "pointer";
-          flag.onclick = () => window.open(newUrl.trim(), "_blank");
+          flag.style.pointerEvents = "auto";
+          flag.onclick = (e) => {
+            e.stopPropagation();
+            e.preventDefault();
+            window.open(newUrl.trim(), "_blank");
+          };
           flag.title = `${
             type === "english" ? "Anglais" : "Espagnol"
           } - ${newUrl.trim()}`;
           flag.dataset.url = newUrl.trim();
         } else {
           flag.style.cursor = "default";
+          flag.style.pointerEvents = "auto";
           flag.onclick = null;
           flag.title = type === "english" ? "Anglais" : "Espagnol";
           flag.dataset.url = "";
@@ -1734,19 +1753,15 @@
 
       // Désactiver l'édition par défaut après le chargement complet
       document.addEventListener("DOMContentLoaded", function () {
-        // Charger les données en mode public par défaut
-        loadTable();
-
         // Vérifier la session au chargement
         const encryptedUserId = localStorage.getItem("adminUserId");
         if (encryptedUserId) {
           const userId = decrypt(encryptedUserId);
           document.getElementById("userId").value = userId;
-          // Activer l'édition seulement si connecté
-          enableEditing();
-        } else {
-          disableEditing();
         }
+
+        // Charger les données (la gestion des boutons est faite dans loadTable)
+        loadTable();
       });
 
       // Fonction de chiffrement simple
