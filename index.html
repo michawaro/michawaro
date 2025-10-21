@@ -415,27 +415,15 @@
       }
 
       .flag-english {
-        background: linear-gradient(
-          to bottom,
-          #012169 0%,
-          #012169 33%,
-          #ffffff 33%,
-          #ffffff 66%,
-          #c8102e 66%,
-          #c8102e 100%
-        );
+        background-image: url("https://flagcdn.com/24x16/gb.png");
+        background-size: cover;
+        background-position: center;
       }
 
       .flag-spanish {
-        background: linear-gradient(
-          to bottom,
-          #c60b1e 0%,
-          #c60b1e 25%,
-          #ffc400 25%,
-          #ffc400 75%,
-          #c60b1e 75%,
-          #c60b1e 100%
-        );
+        background-image: url("https://flagcdn.com/24x16/es.png");
+        background-size: cover;
+        background-position: center;
       }
 
       .add-flag-btn {
@@ -837,7 +825,8 @@
 
       // Créer les boutons avec des fonctions inline plus simples
       const englishBtn = document.createElement("button");
-      englishBtn.textContent = "🇬🇧 Anglais";
+      englishBtn.innerHTML =
+        '<img src="https://flagcdn.com/16x12/gb.png" width="16" height="12" alt="English flag"> English';
       englishBtn.onclick = () => {
         const urlInput = menu.querySelector(".flag-url-input");
         const url = urlInput ? urlInput.value.trim() : "";
@@ -846,7 +835,8 @@
       };
 
       const spanishBtn = document.createElement("button");
-      spanishBtn.textContent = "🇪🇸 Espagnol";
+      spanishBtn.innerHTML =
+        '<img src="https://flagcdn.com/16x12/es.png" width="16" height="12" alt="Spanish flag"> Español';
       spanishBtn.onclick = () => {
         const urlInput = menu.querySelector(".flag-url-input");
         const url = urlInput ? urlInput.value.trim() : "";
@@ -894,19 +884,80 @@
       flag.className = `flag flag-${type}`;
       flag.title = type === "english" ? "Anglais" : "Espagnol";
 
+      // Ajouter un bouton pour éditer l'URL (visible seulement en mode admin)
+      const editUrlBtn = document.createElement("button");
+      editUrlBtn.innerHTML = "✏️";
+      editUrlBtn.style.cssText = `
+        position: absolute;
+        top: -8px;
+        right: -8px;
+        background: rgba(0, 0, 0, 0.7);
+        color: white;
+        border: none;
+        border-radius: 50%;
+        width: 16px;
+        height: 16px;
+        font-size: 10px;
+        cursor: pointer;
+        display: none;
+        z-index: 7;
+      `;
+      editUrlBtn.title = "Modifier l'URL";
+      editUrlBtn.onclick = (e) => {
+        e.stopPropagation();
+        editFlagUrl(flagContainer, type);
+      };
+
       // Si une URL est fournie, rendre le drapeau cliquable
       if (url) {
         flag.style.cursor = "pointer";
         flag.onclick = () => window.open(url, "_blank");
         flag.title += ` - ${url}`;
+        flag.dataset.url = url; // Stocker l'URL dans le dataset
       }
 
       flagContainer.appendChild(flag);
+      flagContainer.appendChild(editUrlBtn);
       cell.appendChild(flagContainer);
+
+      // Afficher le bouton d'édition au survol (mode admin seulement)
+      const encryptedUserId = localStorage.getItem("adminUserId");
+      if (encryptedUserId) {
+        flagContainer.addEventListener("mouseenter", () => {
+          editUrlBtn.style.display = "block";
+        });
+        flagContainer.addEventListener("mouseleave", () => {
+          editUrlBtn.style.display = "none";
+        });
+      }
+
       console.log("Drapeau ajouté:", flag);
 
       // Sauvegarder les changements
       saveTable();
+    }
+
+    function editFlagUrl(flagContainer, type) {
+      const flag = flagContainer.querySelector(".flag");
+      const currentUrl = flag.dataset.url || "";
+
+      const newUrl = prompt("Modifier l'URL du drapeau:", currentUrl);
+      if (newUrl !== null) {
+        if (newUrl.trim()) {
+          flag.style.cursor = "pointer";
+          flag.onclick = () => window.open(newUrl.trim(), "_blank");
+          flag.title = `${
+            type === "english" ? "Anglais" : "Espagnol"
+          } - ${newUrl.trim()}`;
+          flag.dataset.url = newUrl.trim();
+        } else {
+          flag.style.cursor = "default";
+          flag.onclick = null;
+          flag.title = type === "english" ? "Anglais" : "Espagnol";
+          flag.dataset.url = "";
+        }
+        saveTable();
+      }
     }
   </script>
 
