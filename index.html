@@ -384,12 +384,21 @@
         transform: scale(1.1);
       }
 
+      /* Boutons de suppression de ligne - visibles seulement en mode admin */
       tr:hover .delete-row-btn {
+        display: none;
+      }
+
+      .admin-mode tr:hover .delete-row-btn {
         display: block !important;
       }
 
       /* Alternative : afficher le bouton au survol de la cellule vidéo */
       td:hover .delete-row-btn {
+        display: none;
+      }
+
+      .admin-mode td:hover .delete-row-btn {
         display: block !important;
       }
 
@@ -807,9 +816,7 @@
         // Supprimer côté UI
         row.remove();
         console.log("Ligne supprimée avec succès");
-
-        // Optionnel : sauvegarder pour mettre à jour les ordres
-        await saveToSupabase();
+        // Pas besoin de sauvegarder car la suppression est déjà faite côté Supabase
       } else {
         alert(
           "Erreur lors de la suppression de la base de données. La ligne n'a pas été supprimée."
