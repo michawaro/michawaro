@@ -459,7 +459,16 @@
       }
 
       td:nth-child(3):hover .add-flag-btn {
-        display: block;
+        display: block !important;
+      }
+
+      /* Alternative plus simple */
+      .add-flag-btn {
+        display: none;
+      }
+
+      td:hover .add-flag-btn {
+        display: block !important;
       }
 
       .flag-menu {
@@ -1204,6 +1213,9 @@
         };
         tdContenu.appendChild(addFlagBtn);
 
+        // Debug : vérifier que le bouton est créé
+        console.log("Bouton drapeau créé:", addFlagBtn);
+
         const tdRessources = document.createElement("td");
         if (
           ressources &&
@@ -1504,10 +1516,12 @@
 
         // Activer les boutons d'ajout de drapeau
         const addFlagButtons = document.querySelectorAll(".add-flag-btn");
+        console.log("Boutons drapeau trouvés:", addFlagButtons.length);
         addFlagButtons.forEach((btn) => {
           btn.style.pointerEvents = "auto";
           btn.style.opacity = "1";
           btn.style.display = "none"; // Reste caché jusqu'au survol
+          console.log("Bouton drapeau activé:", btn);
         });
 
         // Activer le drag & drop
