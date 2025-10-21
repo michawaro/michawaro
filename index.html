@@ -544,12 +544,21 @@
 
       const userId = userIdElement.value.trim();
 
-      // Charger les données pour cet utilisateur spécifique
-      const { data, error } = await supabaseClient
+      // Charger les données publiques par défaut (userId vide) ou pour l'utilisateur spécifique
+      let query = supabaseClient
         .from("videos")
         .select("video_url, niveau, contenu, ressources, ordre")
-        .eq("user_id", userId)
         .order("ordre", { ascending: true, nullsFirst: true });
+
+      // Si un userId est spécifié, filtrer par utilisateur
+      if (userId) {
+        query = query.eq("user_id", userId);
+      } else {
+        // En mode public, charger les données publiques (par exemple userId = "public" ou vide)
+        query = query.eq("user_id", "michawaro4480"); // Utiliser l'ID par défaut pour les données publiques
+      }
+
+      const { data, error } = await query;
 
       // LOG pour diagnostic
       console.log("Données chargées depuis Supabase :", data);
@@ -624,11 +633,12 @@
     }
     async function loadTable() {
       await loadFromSupabase();
-      // Activer l'édition après le chargement des données
+      // Activer l'édition après le chargement des données seulement si connecté
       const encryptedUserId = localStorage.getItem("adminUserId");
       if (encryptedUserId) {
         enableEditing();
       }
+      // Sinon, les données sont chargées en mode lecture seule
     }
 
     // Fonction pour supprimer une ligne côté Supabase
@@ -1336,12 +1346,14 @@
 
       // Désactiver l'édition par défaut après le chargement complet
       document.addEventListener("DOMContentLoaded", function () {
+        // Charger les données en mode public par défaut
+        loadTable();
+
         // Vérifier la session au chargement
         const encryptedUserId = localStorage.getItem("adminUserId");
         if (encryptedUserId) {
           const userId = decrypt(encryptedUserId);
           document.getElementById("userId").value = userId;
-          loadTable(); // Charger les données seulement si connecté
           // enableEditing sera appelé après le chargement des données
         } else {
           disableEditing();
