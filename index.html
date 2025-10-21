@@ -812,7 +812,6 @@
                 type="checkbox"
                 class="niveau-checkbox"
                 value="Lycée"
-                checked
                 style="accent-color: #e84e9b; width: 18px; height: 18px"
               />
               Lycée
@@ -822,7 +821,6 @@
                 type="checkbox"
                 class="niveau-checkbox"
                 value="Collège"
-                checked
                 style="accent-color: #89d6e2; width: 18px; height: 18px"
               />
               Collège
@@ -832,7 +830,6 @@
                 type="checkbox"
                 class="niveau-checkbox"
                 value="Enseignants"
-                checked
                 style="accent-color: #fce86e; width: 18px; height: 18px"
               />
               Enseignants
@@ -845,7 +842,6 @@
                 type="checkbox"
                 class="contenu-checkbox"
                 value="Méthodologie"
-                checked
                 style="accent-color: #e84e9b; width: 18px; height: 18px"
               />
               Méthodologie
@@ -855,7 +851,6 @@
                 type="checkbox"
                 class="contenu-checkbox"
                 value="Pédagogie"
-                checked
                 style="accent-color: #89d6e2; width: 18px; height: 18px"
               />
               Pédagogie
@@ -865,7 +860,6 @@
                 type="checkbox"
                 class="contenu-checkbox"
                 value="Cours"
-                checked
                 style="accent-color: #fce86e; width: 18px; height: 18px"
               />
               Cours
@@ -1517,6 +1511,15 @@
         const contenusAffiches = Array.from(checkboxesContenu)
           .filter((cb) => cb.checked)
           .map((cb) => cb.value.toUpperCase());
+
+        // Si aucun filtre n'est coché, tout s'affiche
+        if (niveauxAffiches.length === 0 && contenusAffiches.length === 0) {
+          document.querySelectorAll("#tableBody tr").forEach((row) => {
+            row.style.display = "";
+          });
+          return;
+        }
+
         // Pour chaque ligne du tableau
         document.querySelectorAll("#tableBody tr").forEach((row) => {
           const niveauCell = row.cells[1];
@@ -1524,30 +1527,23 @@
           if (!niveauCell || !contenuCell) return;
           const niveauTexte = niveauCell.textContent || "";
           const contenuTexte = (contenuCell.textContent || "").toUpperCase();
+
           // Filtrage Niveau
-          const visibleNiveau = niveauxAffiches.some((niv) =>
-            niveauTexte.includes(niv)
-          );
+          let visibleNiveau = true;
+          if (niveauxAffiches.length > 0) {
+            visibleNiveau = niveauxAffiches.some((niv) =>
+              niveauTexte.includes(niv)
+            );
+          }
+
           // Filtrage Contenu
           let visibleContenu = true;
-          if (contenusAffiches.length < 3) {
-            // Si une coche est décochée, on filtre
-            if (
-              !contenusAffiches.includes("MÉTHODOLOGIE") &&
-              contenuTexte.includes("MÉTHODOLOGIE")
-            )
-              visibleContenu = false;
-            if (
-              !contenusAffiches.includes("PÉDAGOGIE") &&
-              contenuTexte.includes("PÉDAGOGIE")
-            )
-              visibleContenu = false;
-            if (
-              !contenusAffiches.includes("COURS") &&
-              contenuTexte.includes("COURS")
-            )
-              visibleContenu = false;
+          if (contenusAffiches.length > 0) {
+            visibleContenu = contenusAffiches.some((cont) =>
+              contenuTexte.includes(cont)
+            );
           }
+
           row.style.display = visibleNiveau && visibleContenu ? "" : "none";
         });
       }
