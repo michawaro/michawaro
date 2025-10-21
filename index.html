@@ -767,6 +767,39 @@
       });
 
       // Ne pas appeler disableEditing() ici - c'est géré par loadTable()
+
+      // Rendre tous les drapeaux existants cliquables
+      setTimeout(() => {
+        makeAllFlagsClickable();
+      }, 200);
+    }
+
+    // Fonction pour rendre tous les drapeaux cliquables
+    function makeAllFlagsClickable() {
+      const flags = document.querySelectorAll(".flag-container .flag");
+      flags.forEach((flag) => {
+        const url = flag.dataset.url;
+        if (url && url.trim()) {
+          // Supprimer l'ancien event listener s'il existe
+          if (flag._clickHandler) {
+            flag.removeEventListener("click", flag._clickHandler);
+          }
+
+          // Créer et attacher le nouvel event listener
+          flag._clickHandler = (e) => {
+            e.stopPropagation();
+            e.preventDefault();
+            console.log("Clic sur drapeau chargé, URL:", url);
+            window.open(url, "_blank");
+          };
+          flag.addEventListener("click", flag._clickHandler);
+
+          // S'assurer que le drapeau est cliquable
+          flag.style.cursor = "pointer";
+          flag.style.pointerEvents = "auto";
+          flag.style.zIndex = "10";
+        }
+      });
     }
 
     // Remplace ou complète la logique existante :
@@ -793,9 +826,15 @@
         if (encryptedUserId) {
           const userId = decrypt(encryptedUserId);
           document.getElementById("userId").value = userId;
-          setTimeout(() => enableEditing(), 100);
+          setTimeout(() => {
+            enableEditing();
+            makeAllFlagsClickable(); // Rendre les drapeaux cliquables
+          }, 100);
         } else {
-          setTimeout(() => disableEditing(), 100);
+          setTimeout(() => {
+            disableEditing();
+            makeAllFlagsClickable(); // Rendre les drapeaux cliquables même en mode public
+          }, 100);
         }
       } finally {
         isLoading = false;
