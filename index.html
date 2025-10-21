@@ -696,6 +696,7 @@
       const { data, error } = await query;
 
       // LOG pour diagnostic
+      console.log("Chargement avec userId:", userId);
       console.log("Données chargées depuis Supabase :", data);
       console.log("Nombre de lignes chargées :", data ? data.length : 0);
 
@@ -818,14 +819,25 @@
       );
 
       try {
-        const { error } = await supabaseClient
+        // Supprimer de TOUS les user_id possibles pour éviter les incohérences
+        const { error: error1 } = await supabaseClient
           .from("videos")
           .delete()
           .eq("user_id", userId)
           .eq("video_url", videoUrl);
 
-        if (error) {
-          console.error("Erreur lors de la suppression:", error.message);
+        // Aussi supprimer avec l'ID public au cas où
+        const { error: error2 } = await supabaseClient
+          .from("videos")
+          .delete()
+          .eq("user_id", "michawaro4480")
+          .eq("video_url", videoUrl);
+
+        if (error1 && error2) {
+          console.error(
+            "Erreur lors de la suppression:",
+            error1.message || error2.message
+          );
           return false;
         }
 
