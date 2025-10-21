@@ -458,16 +458,13 @@
         background: rgba(0, 0, 0, 0.9);
       }
 
-      td:nth-child(3):hover .add-flag-btn {
-        display: block !important;
-      }
-
-      /* Alternative plus simple */
+      /* Bouton d'ajout de drapeau - visible seulement en mode admin */
       .add-flag-btn {
         display: none;
       }
 
-      td:hover .add-flag-btn {
+      /* Afficher le bouton seulement si l'utilisateur est connecté */
+      .admin-mode td:nth-child(3):hover .add-flag-btn {
         display: block !important;
       }
 
@@ -896,8 +893,8 @@
       flag.className = "flag";
       flag.src =
         type === "english"
-          ? "https://flagcdn.com/24x16/gb.png"
-          : "https://flagcdn.com/24x16/es.png";
+          ? "https://flagcdn.com/16x12/gb.png"
+          : "https://flagcdn.com/16x12/es.png";
       flag.alt = type === "english" ? "English flag" : "Spanish flag";
       flag.title = type === "english" ? "Anglais" : "Espagnol";
       flag.style.width = "24px";
@@ -931,6 +928,31 @@
         editFlagUrl(flagContainer, type);
       };
 
+      // Ajouter un bouton pour supprimer le drapeau (visible seulement en mode admin)
+      const deleteFlagBtn = document.createElement("button");
+      deleteFlagBtn.innerHTML = "❌";
+      deleteFlagBtn.style.cssText = `
+        position: absolute;
+        top: -8px;
+        left: -8px;
+        background: rgba(255, 0, 0, 0.8);
+        color: white;
+        border: none;
+        border-radius: 50%;
+        width: 16px;
+        height: 16px;
+        font-size: 10px;
+        cursor: pointer;
+        display: none;
+        z-index: 7;
+      `;
+      deleteFlagBtn.title = "Supprimer le drapeau";
+      deleteFlagBtn.onclick = (e) => {
+        e.stopPropagation();
+        flagContainer.remove();
+        saveTable();
+      };
+
       // Si une URL est fournie, rendre le drapeau cliquable
       if (url) {
         flag.style.cursor = "pointer";
@@ -941,6 +963,7 @@
 
       flagContainer.appendChild(flag);
       flagContainer.appendChild(editUrlBtn);
+      flagContainer.appendChild(deleteFlagBtn);
       cell.appendChild(flagContainer);
 
       // Ajouter l'effet de survol pour l'image
@@ -951,14 +974,16 @@
         flag.style.transform = "scale(1)";
       });
 
-      // Afficher le bouton d'édition au survol (mode admin seulement)
+      // Afficher les boutons d'édition et suppression au survol (mode admin seulement)
       const encryptedUserId = localStorage.getItem("adminUserId");
       if (encryptedUserId) {
         flagContainer.addEventListener("mouseenter", () => {
           editUrlBtn.style.display = "block";
+          deleteFlagBtn.style.display = "block";
         });
         flagContainer.addEventListener("mouseleave", () => {
           editUrlBtn.style.display = "none";
+          deleteFlagBtn.style.display = "none";
         });
       }
 
@@ -1546,6 +1571,9 @@
           btn.style.display = "none";
         });
 
+        // Supprimer la classe admin-mode du body
+        document.body.classList.remove("admin-mode");
+
         // Désactiver le drag & drop
         const resourceContainers = document.querySelectorAll(
           ".resource-container"
@@ -1617,6 +1645,9 @@
           btn.style.display = "none"; // Reste caché jusqu'au survol
           console.log("Bouton drapeau activé:", btn);
         });
+
+        // Ajouter la classe admin-mode au body
+        document.body.classList.add("admin-mode");
 
         // Activer le drag & drop
         const resourceContainers = document.querySelectorAll(
