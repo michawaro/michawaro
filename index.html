@@ -415,15 +415,27 @@
       }
 
       .flag-english {
-        background-image: url("https://flagcdn.com/24x16/gb.png");
-        background-size: cover;
-        background-position: center;
+        background: linear-gradient(
+          to bottom,
+          #012169 0%,
+          #012169 33%,
+          #ffffff 33%,
+          #ffffff 66%,
+          #c8102e 66%,
+          #c8102e 100%
+        );
       }
 
       .flag-spanish {
-        background-image: url("https://flagcdn.com/24x16/es.png");
-        background-size: cover;
-        background-position: center;
+        background: linear-gradient(
+          to bottom,
+          #c60b1e 0%,
+          #c60b1e 25%,
+          #ffc400 25%,
+          #ffc400 75%,
+          #c60b1e 75%,
+          #c60b1e 100%
+        );
       }
 
       .add-flag-btn {
@@ -880,9 +892,20 @@
       const flagContainer = document.createElement("div");
       flagContainer.className = "flag-container";
 
-      const flag = document.createElement("div");
-      flag.className = `flag flag-${type}`;
+      const flag = document.createElement("img");
+      flag.className = "flag";
+      flag.src =
+        type === "english"
+          ? "https://flagcdn.com/24x16/gb.png"
+          : "https://flagcdn.com/24x16/es.png";
+      flag.alt = type === "english" ? "English flag" : "Spanish flag";
       flag.title = type === "english" ? "Anglais" : "Espagnol";
+      flag.style.width = "24px";
+      flag.style.height = "16px";
+      flag.style.borderRadius = "2px";
+      flag.style.cursor = "pointer";
+      flag.style.transition = "transform 0.2s";
+      flag.style.border = "1px solid #ccc";
 
       // Ajouter un bouton pour éditer l'URL (visible seulement en mode admin)
       const editUrlBtn = document.createElement("button");
@@ -919,6 +942,14 @@
       flagContainer.appendChild(flag);
       flagContainer.appendChild(editUrlBtn);
       cell.appendChild(flagContainer);
+
+      // Ajouter l'effet de survol pour l'image
+      flag.addEventListener("mouseenter", () => {
+        flag.style.transform = "scale(1.1)";
+      });
+      flag.addEventListener("mouseleave", () => {
+        flag.style.transform = "scale(1)";
+      });
 
       // Afficher le bouton d'édition au survol (mode admin seulement)
       const encryptedUserId = localStorage.getItem("adminUserId");
