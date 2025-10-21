@@ -699,8 +699,14 @@
         return;
       }
 
+      console.log(
+        "Vidage du tableau et chargement de",
+        data.length,
+        "éléments"
+      );
       tbody.innerHTML = "";
-      data.forEach((item) => {
+      data.forEach((item, index) => {
+        console.log(`Chargement élément ${index + 1}:`, item.video_url);
         // Convertir les ressources JSON en HTML
         let ressourcesHTML =
           '<div class="resource-container"><div class="resource-title-wrapper"><div class="resource-title" contenteditable="true">Titre</div></div><div class="drop-zone"></div></div>';
@@ -762,14 +768,23 @@
     async function saveTable() {
       await saveToSupabase();
     }
+    let isLoading = false; // Flag pour éviter les chargements multiples
+
     async function loadTable() {
-      await loadFromSupabase();
-      // Activer l'édition après le chargement des données seulement si connecté
-      const encryptedUserId = localStorage.getItem("adminUserId");
-      if (encryptedUserId) {
-        enableEditing();
+      if (isLoading) {
+        console.log("Chargement déjà en cours, ignoré");
+        return;
       }
-      // Sinon, les données sont chargées en mode lecture seule
+
+      isLoading = true;
+      console.log("Début du chargement des données");
+
+      try {
+        await loadFromSupabase();
+        console.log("Chargement terminé");
+      } finally {
+        isLoading = false;
+      }
     }
 
     // Fonction pour supprimer une ligne côté Supabase
@@ -1727,14 +1742,11 @@
         if (encryptedUserId) {
           const userId = decrypt(encryptedUserId);
           document.getElementById("userId").value = userId;
-          // enableEditing sera appelé après le chargement des données
+          // Activer l'édition seulement si connecté
+          enableEditing();
         } else {
           disableEditing();
         }
-        // Le tri sera activé seulement après connexion
-        setTimeout(() => {
-          disableEditing();
-        }, 100);
       });
 
       // Fonction de chiffrement simple
