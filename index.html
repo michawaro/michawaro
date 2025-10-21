@@ -1331,11 +1331,11 @@
         if (encryptedUserId) {
           const userId = decrypt(encryptedUserId);
           document.getElementById("userId").value = userId;
+          loadTable(); // Charger les données seulement si connecté
           enableEditing();
         } else {
           disableEditing();
         }
-        loadTable();
         // Le tri sera activé seulement après connexion
         setTimeout(() => {
           disableEditing();
