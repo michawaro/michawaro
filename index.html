@@ -765,8 +765,7 @@
         }
       });
 
-      // Appliquer les restrictions d'édition après le chargement
-      disableEditing();
+      // Ne pas appeler disableEditing() ici - c'est géré par loadTable()
     }
 
     // Remplace ou complète la logique existante :
@@ -787,6 +786,16 @@
       try {
         await loadFromSupabase();
         console.log("Chargement terminé");
+
+        // Appliquer l'état des boutons APRÈS le chargement des données
+        const encryptedUserId = localStorage.getItem("adminUserId");
+        if (encryptedUserId) {
+          const userId = decrypt(encryptedUserId);
+          document.getElementById("userId").value = userId;
+          setTimeout(() => enableEditing(), 100);
+        } else {
+          setTimeout(() => disableEditing(), 100);
+        }
       } finally {
         isLoading = false;
       }
@@ -1765,22 +1774,10 @@
         }
       }
 
-      // Désactiver l'édition par défaut après le chargement complet
+      // Charger les données au démarrage
       document.addEventListener("DOMContentLoaded", function () {
-        // Charger les données en mode public par défaut
+        // loadTable() gère maintenant l'état des boutons
         loadTable();
-
-        // Vérifier la session au chargement
-        const encryptedUserId = localStorage.getItem("adminUserId");
-        if (encryptedUserId) {
-          const userId = decrypt(encryptedUserId);
-          document.getElementById("userId").value = userId;
-          // Activer l'édition seulement si connecté
-          setTimeout(() => enableEditing(), 100);
-        } else {
-          // Désactiver l'édition après que les boutons soient créés
-          setTimeout(() => disableEditing(), 100);
-        }
       });
 
       // Fonction de chiffrement simple
@@ -1806,14 +1803,14 @@
               const encryptedUserId = encrypt(userId.trim());
               localStorage.setItem("adminUserId", encryptedUserId);
               document.getElementById("userId").value = userId.trim();
-              // Ne pas recharger les données, juste activer l'édition
-              enableEditing();
+              // Recharger les données avec le bon userId et activer l'édition
+              loadTable();
             } else {
               alert("Mot de passe incorrect. Accès refusé.");
               // Supprimer l'ID chiffré du localStorage
               localStorage.removeItem("adminUserId");
               document.getElementById("userId").value = "";
-              disableEditing();
+              loadTable();
             }
           } else {
             alert(
@@ -1822,7 +1819,7 @@
             // Supprimer l'ID chiffré du localStorage
             localStorage.removeItem("adminUserId");
             document.getElementById("userId").value = "";
-            disableEditing();
+            loadTable();
           }
         }
       };
@@ -1832,7 +1829,7 @@
         // Supprimer l'ID chiffré du localStorage
         localStorage.removeItem("adminUserId");
         document.getElementById("userId").value = "";
-        disableEditing();
+        loadTable();
       }
 
       // Style pour la fenêtre de confirmation
