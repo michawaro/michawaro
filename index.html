@@ -408,6 +408,15 @@
         bottom: 5px;
         right: 5px;
         z-index: 5;
+        pointer-events: none; /* Empêche le drapeau d'interférer avec le curseur */
+      }
+
+      .flag-container .flag {
+        pointer-events: auto; /* Permet de cliquer sur le drapeau */
+      }
+
+      .flag-container button {
+        pointer-events: auto; /* Permet de cliquer sur les boutons */
       }
 
       .flag {
@@ -972,6 +981,18 @@
       flagContainer.appendChild(editUrlBtn);
       flagContainer.appendChild(deleteFlagBtn);
       cell.appendChild(flagContainer);
+
+      // Remettre le focus sur la cellule pour que le curseur soit au bon endroit
+      setTimeout(() => {
+        cell.focus();
+        // Placer le curseur au début du contenu
+        const range = document.createRange();
+        const sel = window.getSelection();
+        range.setStart(cell.firstChild, 0);
+        range.collapse(true);
+        sel.removeAllRanges();
+        sel.addRange(range);
+      }, 100);
 
       // Ajouter l'effet de survol pour l'image
       flag.addEventListener("mouseenter", () => {
@@ -1739,7 +1760,7 @@
               const encryptedUserId = encrypt(userId.trim());
               localStorage.setItem("adminUserId", encryptedUserId);
               document.getElementById("userId").value = userId.trim();
-              await loadFromSupabase();
+              // Ne pas recharger les données, juste activer l'édition
               enableEditing();
             } else {
               alert("Mot de passe incorrect. Accès refusé.");
