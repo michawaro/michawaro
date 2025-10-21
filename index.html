@@ -822,31 +822,49 @@
 
     // Fonctions pour gérer les drapeaux
     function showFlagMenu(button, cell) {
+      console.log("showFlagMenu appelé", button, cell);
+
       // Fermer tous les autres menus ouverts
       document.querySelectorAll(".flag-menu").forEach((menu) => menu.remove());
 
       const menu = document.createElement("div");
       menu.className = "flag-menu";
-      menu.innerHTML = `
-        <button onclick="addFlag('english', this.parentElement, '${cell.innerHTML.replace(
-          /'/g,
-          "\\'"
-        )}')">🇬🇧 Anglais</button>
-        <button onclick="addFlag('spanish', this.parentElement, '${cell.innerHTML.replace(
-          /'/g,
-          "\\'"
-        )}')">🇪🇸 Espagnol</button>
-        <input type="text" class="flag-url-input" placeholder="URL (optionnel)" />
-      `;
-
-      cell.appendChild(menu);
-
-      // Positionner le menu
-      const rect = button.getBoundingClientRect();
-      const cellRect = cell.getBoundingClientRect();
+      menu.style.display = "block";
       menu.style.position = "absolute";
       menu.style.bottom = "30px";
       menu.style.right = "5px";
+      menu.style.zIndex = "1000";
+
+      // Créer les boutons avec des fonctions inline plus simples
+      const englishBtn = document.createElement("button");
+      englishBtn.textContent = "🇬🇧 Anglais";
+      englishBtn.onclick = () => {
+        const urlInput = menu.querySelector(".flag-url-input");
+        const url = urlInput ? urlInput.value.trim() : "";
+        addFlag("english", cell, url);
+        menu.remove();
+      };
+
+      const spanishBtn = document.createElement("button");
+      spanishBtn.textContent = "🇪🇸 Espagnol";
+      spanishBtn.onclick = () => {
+        const urlInput = menu.querySelector(".flag-url-input");
+        const url = urlInput ? urlInput.value.trim() : "";
+        addFlag("spanish", cell, url);
+        menu.remove();
+      };
+
+      const urlInput = document.createElement("input");
+      urlInput.type = "text";
+      urlInput.className = "flag-url-input";
+      urlInput.placeholder = "URL (optionnel)";
+
+      menu.appendChild(englishBtn);
+      menu.appendChild(spanishBtn);
+      menu.appendChild(urlInput);
+
+      cell.appendChild(menu);
+      console.log("Menu créé et ajouté:", menu);
 
       // Fermer le menu si on clique ailleurs
       setTimeout(() => {
@@ -859,15 +877,8 @@
       }, 100);
     }
 
-    function addFlag(type, menu, originalContent) {
-      const urlInput = menu.querySelector(".flag-url-input");
-      const url = urlInput.value.trim();
-
-      // Trouver la cellule contenu
-      const cell = menu.parentElement;
-
-      // Supprimer le menu
-      menu.remove();
+    function addFlag(type, cell, url) {
+      console.log("addFlag appelé", type, cell, url);
 
       // Supprimer le bouton d'ajout de drapeau
       const addBtn = cell.querySelector(".add-flag-btn");
@@ -892,6 +903,7 @@
 
       flagContainer.appendChild(flag);
       cell.appendChild(flagContainer);
+      console.log("Drapeau ajouté:", flag);
 
       // Sauvegarder les changements
       saveTable();
