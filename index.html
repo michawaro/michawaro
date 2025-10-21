@@ -693,6 +693,7 @@
 
       // LOG pour diagnostic
       console.log("Données chargées depuis Supabase :", data);
+      console.log("Nombre de lignes chargées :", data ? data.length : 0);
 
       if (error) {
         console.warn("Pas de données Supabase ou erreur :", error.message);
@@ -790,12 +791,18 @@
     // Fonction pour supprimer une ligne côté Supabase
     async function deleteRowFromSupabase(videoUrl) {
       const userIdElement = document.getElementById("userId");
-      if (!userIdElement) {
-        console.warn("Élément userId non trouvé");
-        return false;
+      let userId = "michawaro4480"; // Utiliser l'ID public par défaut
+
+      if (userIdElement && userIdElement.value.trim()) {
+        userId = userIdElement.value.trim();
       }
 
-      const userId = userIdElement.value.trim();
+      console.log(
+        "Suppression de la ligne avec userId:",
+        userId,
+        "videoUrl:",
+        videoUrl
+      );
 
       try {
         const { error } = await supabaseClient
@@ -833,15 +840,21 @@
 
     // Fonction principale de suppression
     async function deleteRow(row, videoUrl) {
+      console.log(
+        "Tentative de suppression de la ligne avec videoUrl:",
+        videoUrl
+      );
+
       // Supprimer côté Supabase d'abord
       const supabaseSuccess = await deleteRowFromSupabase(videoUrl);
 
       if (supabaseSuccess) {
         // Supprimer côté UI
         row.remove();
-        console.log("Ligne supprimée avec succès");
+        console.log("Ligne supprimée avec succès de l'UI et de Supabase");
         // Pas besoin de sauvegarder car la suppression est déjà faite côté Supabase
       } else {
+        console.error("Échec de la suppression côté Supabase");
         alert(
           "Erreur lors de la suppression de la base de données. La ligne n'a pas été supprimée."
         );
