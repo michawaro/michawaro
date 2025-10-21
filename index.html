@@ -392,6 +392,113 @@
       td:hover .delete-row-btn {
         display: block !important;
       }
+
+      /* Styles pour les drapeaux */
+      .flag-container {
+        position: absolute;
+        bottom: 5px;
+        right: 5px;
+        z-index: 5;
+      }
+
+      .flag {
+        width: 24px;
+        height: 16px;
+        border-radius: 2px;
+        cursor: pointer;
+        transition: transform 0.2s;
+        border: 1px solid #ccc;
+      }
+
+      .flag:hover {
+        transform: scale(1.1);
+      }
+
+      .flag-english {
+        background: linear-gradient(
+          to bottom,
+          #012169 0%,
+          #012169 33%,
+          #ffffff 33%,
+          #ffffff 66%,
+          #c8102e 66%,
+          #c8102e 100%
+        );
+      }
+
+      .flag-spanish {
+        background: linear-gradient(
+          to bottom,
+          #c60b1e 0%,
+          #c60b1e 25%,
+          #ffc400 25%,
+          #ffc400 75%,
+          #c60b1e 75%,
+          #c60b1e 100%
+        );
+      }
+
+      .add-flag-btn {
+        position: absolute;
+        bottom: 5px;
+        right: 5px;
+        background: rgba(0, 0, 0, 0.7);
+        color: white;
+        border: none;
+        border-radius: 50%;
+        width: 20px;
+        height: 20px;
+        font-size: 12px;
+        cursor: pointer;
+        display: none;
+        z-index: 6;
+      }
+
+      .add-flag-btn:hover {
+        background: rgba(0, 0, 0, 0.9);
+      }
+
+      td:nth-child(3):hover .add-flag-btn {
+        display: block;
+      }
+
+      .flag-menu {
+        position: absolute;
+        bottom: 30px;
+        right: 5px;
+        background: white;
+        border: 1px solid #ccc;
+        border-radius: 6px;
+        padding: 8px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+        display: none;
+        z-index: 10;
+      }
+
+      .flag-menu button {
+        display: block;
+        width: 100%;
+        padding: 4px 8px;
+        margin: 2px 0;
+        border: none;
+        background: #f5f5f5;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 12px;
+      }
+
+      .flag-menu button:hover {
+        background: #e0e0e0;
+      }
+
+      .flag-url-input {
+        width: 100%;
+        padding: 4px;
+        margin-top: 4px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        font-size: 11px;
+      }
     </style>
   </head>
 
@@ -703,6 +810,83 @@
         );
       }
     }
+
+    // Fonctions pour gérer les drapeaux
+    function showFlagMenu(button, cell) {
+      // Fermer tous les autres menus ouverts
+      document.querySelectorAll(".flag-menu").forEach((menu) => menu.remove());
+
+      const menu = document.createElement("div");
+      menu.className = "flag-menu";
+      menu.innerHTML = `
+        <button onclick="addFlag('english', this.parentElement, '${cell.innerHTML.replace(
+          /'/g,
+          "\\'"
+        )}')">🇬🇧 Anglais</button>
+        <button onclick="addFlag('spanish', this.parentElement, '${cell.innerHTML.replace(
+          /'/g,
+          "\\'"
+        )}')">🇪🇸 Espagnol</button>
+        <input type="text" class="flag-url-input" placeholder="URL (optionnel)" />
+      `;
+
+      cell.appendChild(menu);
+
+      // Positionner le menu
+      const rect = button.getBoundingClientRect();
+      const cellRect = cell.getBoundingClientRect();
+      menu.style.position = "absolute";
+      menu.style.bottom = "30px";
+      menu.style.right = "5px";
+
+      // Fermer le menu si on clique ailleurs
+      setTimeout(() => {
+        document.addEventListener("click", function closeMenu(e) {
+          if (!menu.contains(e.target) && e.target !== button) {
+            menu.remove();
+            document.removeEventListener("click", closeMenu);
+          }
+        });
+      }, 100);
+    }
+
+    function addFlag(type, menu, originalContent) {
+      const urlInput = menu.querySelector(".flag-url-input");
+      const url = urlInput.value.trim();
+
+      // Trouver la cellule contenu
+      const cell = menu.parentElement;
+
+      // Supprimer le menu
+      menu.remove();
+
+      // Supprimer le bouton d'ajout de drapeau
+      const addBtn = cell.querySelector(".add-flag-btn");
+      if (addBtn) {
+        addBtn.remove();
+      }
+
+      // Créer le conteneur de drapeau
+      const flagContainer = document.createElement("div");
+      flagContainer.className = "flag-container";
+
+      const flag = document.createElement("div");
+      flag.className = `flag flag-${type}`;
+      flag.title = type === "english" ? "Anglais" : "Espagnol";
+
+      // Si une URL est fournie, rendre le drapeau cliquable
+      if (url) {
+        flag.style.cursor = "pointer";
+        flag.onclick = () => window.open(url, "_blank");
+        flag.title += ` - ${url}`;
+      }
+
+      flagContainer.appendChild(flag);
+      cell.appendChild(flagContainer);
+
+      // Sauvegarder les changements
+      saveTable();
+    }
   </script>
 
   <body>
@@ -1005,8 +1189,20 @@
         tdNiveau.contentEditable = true;
 
         const tdContenu = document.createElement("td");
+        tdContenu.style.position = "relative"; // Pour positionner le bouton de drapeau
         tdContenu.innerHTML = contenu;
         tdContenu.contentEditable = true;
+
+        // Ajouter le bouton d'ajout de drapeau
+        const addFlagBtn = document.createElement("button");
+        addFlagBtn.className = "add-flag-btn";
+        addFlagBtn.innerHTML = "🏁";
+        addFlagBtn.title = "Ajouter un drapeau";
+        addFlagBtn.onclick = (e) => {
+          e.stopPropagation();
+          showFlagMenu(addFlagBtn, tdContenu);
+        };
+        tdContenu.appendChild(addFlagBtn);
 
         const tdRessources = document.createElement("td");
         if (
@@ -1236,6 +1432,14 @@
           btn.style.display = "none";
         });
 
+        // Désactiver les boutons d'ajout de drapeau
+        const addFlagButtons = document.querySelectorAll(".add-flag-btn");
+        addFlagButtons.forEach((btn) => {
+          btn.style.pointerEvents = "none";
+          btn.style.opacity = "0.3";
+          btn.style.display = "none";
+        });
+
         // Désactiver le drag & drop
         const resourceContainers = document.querySelectorAll(
           ".resource-container"
@@ -1293,6 +1497,14 @@
         // Activer les boutons de suppression de ligne
         const deleteRowButtons = document.querySelectorAll(".delete-row-btn");
         deleteRowButtons.forEach((btn) => {
+          btn.style.pointerEvents = "auto";
+          btn.style.opacity = "1";
+          btn.style.display = "none"; // Reste caché jusqu'au survol
+        });
+
+        // Activer les boutons d'ajout de drapeau
+        const addFlagButtons = document.querySelectorAll(".add-flag-btn");
+        addFlagButtons.forEach((btn) => {
           btn.style.pointerEvents = "auto";
           btn.style.opacity = "1";
           btn.style.display = "none"; // Reste caché jusqu'au survol
