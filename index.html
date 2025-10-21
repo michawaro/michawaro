@@ -782,16 +782,18 @@
       try {
         await loadFromSupabase();
         console.log("Chargement terminé");
-
-        // Appliquer les restrictions d'édition après le chargement
-        const encryptedUserId = localStorage.getItem("adminUserId");
-        if (encryptedUserId) {
-          enableEditing();
-        } else {
-          disableEditing();
-        }
       } finally {
         isLoading = false;
+      }
+    }
+
+    // Fonction séparée pour gérer les boutons après chargement
+    function applyButtonState() {
+      const encryptedUserId = localStorage.getItem("adminUserId");
+      if (encryptedUserId) {
+        enableEditing();
+      } else {
+        disableEditing();
       }
     }
 
@@ -1752,7 +1754,7 @@
       }
 
       // Désactiver l'édition par défaut après le chargement complet
-      document.addEventListener("DOMContentLoaded", function () {
+      document.addEventListener("DOMContentLoaded", async function () {
         // Vérifier la session au chargement
         const encryptedUserId = localStorage.getItem("adminUserId");
         if (encryptedUserId) {
@@ -1760,8 +1762,11 @@
           document.getElementById("userId").value = userId;
         }
 
-        // Charger les données (la gestion des boutons est faite dans loadTable)
-        loadTable();
+        // Charger les données d'abord
+        await loadTable();
+
+        // Puis appliquer l'état des boutons
+        applyButtonState();
       });
 
       // Fonction de chiffrement simple
