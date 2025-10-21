@@ -83,7 +83,11 @@
       }
 
       tr:hover {
-        background-color: #fef0f7;
+        background-color: #f0f8f0 !important;
+      }
+
+      tr:hover td {
+        background-color: #f0f8f0 !important;
       }
 
       .resource-container {
@@ -1001,9 +1005,11 @@
       if (url) {
         flag.style.cursor = "pointer";
         flag.style.pointerEvents = "auto"; // S'assurer que les clics fonctionnent
+        flag.style.zIndex = "10"; // S'assurer que le drapeau est au-dessus
         flag.onclick = (e) => {
           e.stopPropagation();
           e.preventDefault();
+          console.log("Clic sur drapeau, URL:", url);
           window.open(url, "_blank");
         };
         flag.title += ` - ${url}`;
@@ -1063,9 +1069,11 @@
         if (newUrl.trim()) {
           flag.style.cursor = "pointer";
           flag.style.pointerEvents = "auto";
+          flag.style.zIndex = "10";
           flag.onclick = (e) => {
             e.stopPropagation();
             e.preventDefault();
+            console.log("Clic sur drapeau modifié, URL:", newUrl.trim());
             window.open(newUrl.trim(), "_blank");
           };
           flag.title = `${
@@ -1075,6 +1083,7 @@
         } else {
           flag.style.cursor = "default";
           flag.style.pointerEvents = "auto";
+          flag.style.zIndex = "10";
           flag.onclick = null;
           flag.title = type === "english" ? "Anglais" : "Espagnol";
           flag.dataset.url = "";
