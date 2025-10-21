@@ -385,7 +385,12 @@
       }
 
       tr:hover .delete-row-btn {
-        display: block;
+        display: block !important;
+      }
+
+      /* Alternative : afficher le bouton au survol de la cellule vidéo */
+      td:hover .delete-row-btn {
+        display: block !important;
       }
     </style>
   </head>
@@ -619,6 +624,11 @@
     }
     async function loadTable() {
       await loadFromSupabase();
+      // Activer l'édition après le chargement des données
+      const encryptedUserId = localStorage.getItem("adminUserId");
+      if (encryptedUserId) {
+        enableEditing();
+      }
     }
 
     // Fonction pour supprimer une ligne côté Supabase
@@ -971,6 +981,7 @@
         deleteRowBtn.onclick = () => confirmDeleteRow(row);
 
         const tdVideo = document.createElement("td");
+        tdVideo.style.position = "relative"; // Pour positionner le bouton de suppression
         tdVideo.innerHTML = `
     <a href="${videoUrl}" target="_blank">
       <img class="thumb" src="https://img.youtube.com/vi/${id}/mqdefault.jpg" alt="Miniature vidéo">
@@ -1074,11 +1085,10 @@
           resourceContainer.appendChild(dropZone);
           tdRessources.appendChild(resourceContainer);
         }
+        // Ajouter le bouton de suppression dans la cellule vidéo
+        tdVideo.appendChild(deleteRowBtn);
+
         row.append(tdVideo, tdNiveau, tdContenu, tdRessources);
-
-        // Ajouter le bouton de suppression à la ligne
-        row.appendChild(deleteRowBtn);
-
         tbody.appendChild(row);
 
         // Appliquer les restrictions d'édition après l'ajout de la ligne
@@ -1332,7 +1342,7 @@
           const userId = decrypt(encryptedUserId);
           document.getElementById("userId").value = userId;
           loadTable(); // Charger les données seulement si connecté
-          enableEditing();
+          // enableEditing sera appelé après le chargement des données
         } else {
           disableEditing();
         }
