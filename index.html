@@ -2129,108 +2129,67 @@
 
           // Variable pour stocker les lignes cochées à déplacer
           let selectedRowsForDrag = [];
-          // Variable pour le défilement automatique
-          let autoScrollInterval = null;
-          let autoScrollSpeed = 0;
+          // Variable pour le défilement automatique basé sur le déplacement
+          let draggedRow = null;
+          let lastDraggedRowIndex = -1;
           let scrollCheckInterval = null;
-          let lastMouseY = 0;
-
-          // Fonction pour arrêter le défilement automatique
-          function stopAutoScroll() {
-            if (autoScrollInterval) {
-              clearInterval(autoScrollInterval);
-              autoScrollInterval = null;
-              autoScrollSpeed = 0;
-            }
-            if (scrollCheckInterval) {
-              clearInterval(scrollCheckInterval);
-              scrollCheckInterval = null;
-            }
-          }
-
-          // Fonction pour vérifier la position de la souris et déclencher le défilement
-          function checkMousePositionForScroll(mouseY) {
-            const scrollThreshold = 100; // Distance en pixels depuis le haut/bas pour déclencher le défilement
-            const maxScrollSpeed = 20; // Vitesse maximale de défilement
-            const windowHeight = window.innerHeight;
-
-            // Calculer la distance depuis le haut et le bas
-            const distanceFromTop = mouseY;
-            const distanceFromBottom = windowHeight - mouseY;
-
-            // Arrêter le défilement précédent
-            if (autoScrollInterval) {
-              clearInterval(autoScrollInterval);
-              autoScrollInterval = null;
-            }
-
-            // Déterminer la vitesse et la direction du défilement
-            let scrollSpeed = 0;
-
-            if (distanceFromTop < scrollThreshold) {
-              // Proche du haut : défilement vers le haut
-              scrollSpeed =
-                -maxScrollSpeed * (1 - distanceFromTop / scrollThreshold);
-            } else if (distanceFromBottom < scrollThreshold) {
-              // Proche du bas : défilement vers le bas
-              scrollSpeed =
-                maxScrollSpeed * (1 - distanceFromBottom / scrollThreshold);
-            }
-
-            // Démarrer le défilement automatique si nécessaire
-            if (scrollSpeed !== 0) {
-              autoScrollSpeed = scrollSpeed;
-              autoScrollInterval = setInterval(function () {
-                window.scrollBy(0, autoScrollSpeed);
-              }, 10); // Défilement toutes les 10ms pour une animation fluide
-            } else {
-              autoScrollSpeed = 0;
-            }
-          }
 
           new Sortable(tableBody, {
             animation: 150,
             handle: "td",
             onStart: function (evt) {
               // Arrêter tout défilement en cours
-              stopAutoScroll();
-
-              // Initialiser la position de la souris
-              if (evt.originalEvent) {
-                lastMouseY = evt.originalEvent.clientY;
-                checkMousePositionForScroll(lastMouseY);
+              if (scrollCheckInterval) {
+                clearInterval(scrollCheckInterval);
+                scrollCheckInterval = null;
               }
 
-              // Créer des gestionnaires d'événements pour suivre la position de la souris
-              // Utiliser capture: true pour capturer tous les événements
-              const mouseMoveHandler = function (e) {
-                lastMouseY = e.clientY;
-                checkMousePositionForScroll(e.clientY);
-              };
-
-              const dragOverHandler = function (e) {
-                e.preventDefault(); // Important pour que dragover fonctionne
-                lastMouseY = e.clientY;
-                checkMousePositionForScroll(e.clientY);
-              };
-
-              // Attacher les gestionnaires d'événements avec capture
-              document.addEventListener("mousemove", mouseMoveHandler, true);
-              document.addEventListener("dragover", dragOverHandler, true);
-              document.addEventListener("drag", dragOverHandler, true);
-
-              // Stocker les gestionnaires pour pouvoir les retirer plus tard
-              evt.item._mouseMoveHandler = mouseMoveHandler;
-              evt.item._dragOverHandler = dragOverHandler;
-
-              // Démarrer aussi une vérification périodique au cas où
-              scrollCheckInterval = setInterval(function () {
-                if (lastMouseY > 0) {
-                  checkMousePositionForScroll(lastMouseY);
-                }
-              }, 50); // Vérifier toutes les 50ms
               // Vérifier si la ligne déplacée a une case cochée
-              const draggedRow = evt.item;
+              draggedRow = evt.item;
+
+              // Stocker l'index initial de la ligne
+              const allRows = Array.from(tableBody.querySelectorAll("tr"));
+              lastDraggedRowIndex = allRows.indexOf(draggedRow);
+
+              // Démarrer la vérification périodique de l'index
+              scrollCheckInterval = setInterval(function () {
+                if (!draggedRow || !draggedRow.parentNode) {
+                  // La ligne n'existe plus, arrêter la vérification
+                  if (scrollCheckInterval) {
+                    clearInterval(scrollCheckInterval);
+                    scrollCheckInterval = null;
+                  }
+                  return;
+                }
+
+                // Obtenir l'index actuel de la ligne
+                const allRows = Array.from(tableBody.querySelectorAll("tr"));
+                const currentIndex = allRows.indexOf(draggedRow);
+
+                // Si l'index a changé
+                if (
+                  currentIndex !== lastDraggedRowIndex &&
+                  currentIndex !== -1
+                ) {
+                  // Calculer la différence
+                  const indexDiff = currentIndex - lastDraggedRowIndex;
+
+                  // Obtenir la hauteur approximative d'une ligne
+                  const rowHeight = draggedRow.offsetHeight || 50;
+
+                  // Calculer la distance de défilement (une ligne)
+                  const scrollAmount = indexDiff * rowHeight;
+
+                  // Faire défiler
+                  window.scrollBy({
+                    top: scrollAmount,
+                    behavior: "auto",
+                  });
+
+                  // Mettre à jour l'index de référence
+                  lastDraggedRowIndex = currentIndex;
+                }
+              }, 100); // Vérifier toutes les 100ms
               const draggedCheckbox = draggedRow.querySelector(
                 ".row-checkbox:not(#selectAllCheckbox)"
               );
@@ -2264,37 +2223,19 @@
               }
             },
             onEnd: function (evt) {
-              // Arrêter le défilement automatique
-              stopAutoScroll();
-
-              // Retirer les gestionnaires d'événements
-              if (evt.item._mouseMoveHandler) {
-                document.removeEventListener(
-                  "mousemove",
-                  evt.item._mouseMoveHandler,
-                  true
-                );
-                delete evt.item._mouseMoveHandler;
-              }
-              if (evt.item._dragOverHandler) {
-                document.removeEventListener(
-                  "dragover",
-                  evt.item._dragOverHandler,
-                  true
-                );
-                document.removeEventListener(
-                  "drag",
-                  evt.item._dragOverHandler,
-                  true
-                );
-                delete evt.item._dragOverHandler;
+              // Arrêter la vérification périodique
+              if (scrollCheckInterval) {
+                clearInterval(scrollCheckInterval);
+                scrollCheckInterval = null;
               }
 
-              // Réinitialiser la position de la souris
-              lastMouseY = 0;
+              const draggedRowLocal = evt.item;
 
-              const draggedRow = evt.item;
-              const draggedCheckbox = draggedRow.querySelector(
+              // Réinitialiser la variable globale
+              draggedRow = null;
+              lastDraggedRowIndex = -1;
+
+              const draggedCheckbox = draggedRowLocal.querySelector(
                 ".row-checkbox:not(#selectAllCheckbox)"
               );
 
@@ -2319,7 +2260,7 @@
                 // Cela les regroupe toutes ensemble, dans l'ordre original
                 if (rowsToMove.length > 0) {
                   // Trouver le prochain élément après la ligne déplacée
-                  const nextSibling = draggedRow.nextSibling;
+                  const nextSibling = draggedRowLocal.nextSibling;
 
                   // Insérer toutes les lignes cochées une par une après la ligne principale
                   // L'ordre est préservé grâce au tri effectué dans onStart
@@ -2332,17 +2273,7 @@
               // Réinitialiser
               selectedRowsForDrag = [];
 
-              // Arrêter le défilement automatique
-              stopAutoScroll();
-
               saveTable();
-            },
-            onMove: function (evt, originalEvent) {
-              // Utiliser l'événement onMove de SortableJS pour capturer la position
-              if (originalEvent && originalEvent.clientY !== undefined) {
-                lastMouseY = originalEvent.clientY;
-                checkMousePositionForScroll(originalEvent.clientY);
-              }
             },
           });
         }
