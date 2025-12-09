@@ -2129,11 +2129,74 @@
 
           // Variable pour stocker les lignes cochées à déplacer
           let selectedRowsForDrag = [];
+          // Variable pour le défilement automatique
+          let autoScrollInterval = null;
+          let autoScrollSpeed = 0;
+          let scrollHandler = null;
+
+          // Fonction pour arrêter le défilement automatique
+          function stopAutoScroll() {
+            if (autoScrollInterval) {
+              clearInterval(autoScrollInterval);
+              autoScrollInterval = null;
+              autoScrollSpeed = 0;
+            }
+            if (scrollHandler) {
+              document.removeEventListener("mousemove", scrollHandler);
+              scrollHandler = null;
+            }
+          }
 
           new Sortable(tableBody, {
             animation: 150,
             handle: "td",
             onStart: function (evt) {
+              // Arrêter tout défilement en cours
+              stopAutoScroll();
+
+              // Créer le gestionnaire de défilement automatique
+              scrollHandler = function (e) {
+                const scrollThreshold = 100; // Distance en pixels depuis le haut/bas pour déclencher le défilement
+                const maxScrollSpeed = 20; // Vitesse maximale de défilement
+                const mouseY = e.clientY;
+                const windowHeight = window.innerHeight;
+
+                // Calculer la distance depuis le haut et le bas
+                const distanceFromTop = mouseY;
+                const distanceFromBottom = windowHeight - mouseY;
+
+                // Arrêter le défilement précédent
+                if (autoScrollInterval) {
+                  clearInterval(autoScrollInterval);
+                  autoScrollInterval = null;
+                }
+
+                // Déterminer la vitesse et la direction du défilement
+                let scrollSpeed = 0;
+
+                if (distanceFromTop < scrollThreshold) {
+                  // Proche du haut : défilement vers le haut
+                  scrollSpeed =
+                    -maxScrollSpeed * (1 - distanceFromTop / scrollThreshold);
+                } else if (distanceFromBottom < scrollThreshold) {
+                  // Proche du bas : défilement vers le bas
+                  scrollSpeed =
+                    maxScrollSpeed * (1 - distanceFromBottom / scrollThreshold);
+                }
+
+                // Démarrer le défilement automatique si nécessaire
+                if (scrollSpeed !== 0) {
+                  autoScrollSpeed = scrollSpeed;
+                  autoScrollInterval = setInterval(function () {
+                    window.scrollBy(0, autoScrollSpeed);
+                  }, 10); // Défilement toutes les 10ms pour une animation fluide
+                } else {
+                  autoScrollSpeed = 0;
+                }
+              };
+
+              // Attacher le gestionnaire d'événement mousemove
+              document.addEventListener("mousemove", scrollHandler);
               // Vérifier si la ligne déplacée a une case cochée
               const draggedRow = evt.item;
               const draggedCheckbox = draggedRow.querySelector(
@@ -2207,6 +2270,9 @@
 
               // Réinitialiser
               selectedRowsForDrag = [];
+
+              // Arrêter le défilement automatique
+              stopAutoScroll();
 
               saveTable();
             },
