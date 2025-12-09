@@ -2118,13 +2118,96 @@
           icon.style.display = "block";
         });
 
-        // Réactiver le tri des lignes
+        // Réactiver le tri des lignes avec support du déplacement multiple
         const tableBody = document.getElementById("tableBody");
         if (tableBody) {
+          // Détruire l'instance existante si elle existe
+          const existingInstance = Sortable.get(tableBody);
+          if (existingInstance) {
+            existingInstance.destroy();
+          }
+
+          // Variable pour stocker les lignes cochées à déplacer
+          let selectedRowsForDrag = [];
+
           new Sortable(tableBody, {
             animation: 150,
             handle: "td",
-            onEnd: function () {
+            onStart: function (evt) {
+              // Vérifier si la ligne déplacée a une case cochée
+              const draggedRow = evt.item;
+              const draggedCheckbox = draggedRow.querySelector(
+                ".row-checkbox:not(#selectAllCheckbox)"
+              );
+
+              // Réinitialiser la liste des lignes à déplacer
+              selectedRowsForDrag = [];
+
+              if (draggedCheckbox && draggedCheckbox.checked) {
+                // Collecter toutes les lignes cochées (sauf celle qui est déjà en train d'être déplacée)
+                // et conserver leur ordre original
+                const allRows = Array.from(tableBody.querySelectorAll("tr"));
+                allRows.forEach((row) => {
+                  if (row !== draggedRow) {
+                    const checkbox = row.querySelector(
+                      ".row-checkbox:not(#selectAllCheckbox)"
+                    );
+                    if (checkbox && checkbox.checked) {
+                      // Stocker avec l'index original pour préserver l'ordre
+                      selectedRowsForDrag.push({
+                        row: row,
+                        originalIndex: allRows.indexOf(row),
+                      });
+                    }
+                  }
+                });
+
+                // Trier par index original pour préserver l'ordre
+                selectedRowsForDrag.sort(
+                  (a, b) => a.originalIndex - b.originalIndex
+                );
+              }
+            },
+            onEnd: function (evt) {
+              const draggedRow = evt.item;
+              const draggedCheckbox = draggedRow.querySelector(
+                ".row-checkbox:not(#selectAllCheckbox)"
+              );
+
+              // Si la ligne déplacée est cochée et qu'il y a d'autres lignes cochées
+              if (
+                draggedCheckbox &&
+                draggedCheckbox.checked &&
+                selectedRowsForDrag.length > 0
+              ) {
+                // Retirer toutes les autres lignes cochées de leur position actuelle
+                const rowsToMove = [];
+                selectedRowsForDrag.forEach((rowData) => {
+                  const row = rowData.row;
+                  // Vérifier que la ligne existe encore dans le DOM
+                  if (row.parentNode === tableBody) {
+                    rowsToMove.push(row);
+                    row.remove();
+                  }
+                });
+
+                // Insérer toutes les lignes cochées juste après la ligne principale déplacée
+                // Cela les regroupe toutes ensemble, dans l'ordre original
+                if (rowsToMove.length > 0) {
+                  // Trouver le prochain élément après la ligne déplacée
+                  const nextSibling = draggedRow.nextSibling;
+
+                  // Insérer toutes les lignes cochées une par une après la ligne principale
+                  // L'ordre est préservé grâce au tri effectué dans onStart
+                  rowsToMove.forEach((row) => {
+                    tableBody.insertBefore(row, nextSibling);
+                  });
+                }
+              }
+
+              // Réinitialiser
+              selectedRowsForDrag = [];
+
               saveTable();
             },
           });
