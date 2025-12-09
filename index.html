@@ -805,7 +805,26 @@
       // Rendre tous les drapeaux existants cliquables
       setTimeout(() => {
         makeAllFlagsClickable();
+        // Attacher les gestionnaires d'événements aux cases à cocher existantes
+        attachCheckboxHandlers();
+        // Réinitialiser la dernière case cochée
+        lastCheckedCheckbox = null;
+        // Mettre à jour l'état de la case "Tout sélectionner"
+        updateSelectAllCheckbox();
       }, 200);
+    }
+
+    // Fonction pour attacher les gestionnaires d'événements aux cases à cocher
+    function attachCheckboxHandlers() {
+      const rowCheckboxes = document.querySelectorAll(
+        ".row-checkbox:not(#selectAllCheckbox)"
+      );
+      rowCheckboxes.forEach((checkbox) => {
+        // Supprimer l'ancien gestionnaire s'il existe
+        checkbox.removeEventListener("click", handleCheckboxClick);
+        // Ajouter le nouveau gestionnaire
+        checkbox.addEventListener("click", handleCheckboxClick);
+      });
     }
 
     // Fonction pour rendre tous les drapeaux cliquables
@@ -1013,11 +1032,13 @@
         }
       }
 
-      // Réinitialiser la case "Tout sélectionner"
+      // Réinitialiser la case "Tout sélectionner" et la dernière case cochée
       const selectAllCheckbox = document.getElementById("selectAllCheckbox");
       if (selectAllCheckbox) {
         selectAllCheckbox.checked = false;
       }
+      lastCheckedCheckbox = null;
+      updateSelectAllCheckbox();
 
       // Afficher un message de résultat
       if (errorCount > 0) {
@@ -1037,6 +1058,9 @@
       }
     }
 
+    // Variable pour mémoriser la dernière case cochée (pour la sélection par plage avec Shift)
+    let lastCheckedCheckbox = null;
+
     // Fonction pour gérer la case "Tout sélectionner"
     function toggleSelectAll() {
       const selectAllCheckbox = document.getElementById("selectAllCheckbox");
@@ -1049,7 +1073,111 @@
         rowCheckboxes.forEach((checkbox) => {
           checkbox.checked = isChecked;
         });
+        // Mettre à jour la dernière case cochée
+        if (isChecked && rowCheckboxes.length > 0) {
+          lastCheckedCheckbox = rowCheckboxes[rowCheckboxes.length - 1];
+        } else {
+          lastCheckedCheckbox = null;
+        }
+        updateSelectAllCheckbox();
       }
+    }
+
+    // Fonction pour mettre à jour l'état de la case "Tout sélectionner"
+    function updateSelectAllCheckbox() {
+      const selectAllCheckbox = document.getElementById("selectAllCheckbox");
+      const rowCheckboxes = document.querySelectorAll(
+        ".row-checkbox:not(#selectAllCheckbox)"
+      );
+
+      if (selectAllCheckbox && rowCheckboxes.length > 0) {
+        const allChecked = Array.from(rowCheckboxes).every((cb) => cb.checked);
+        const someChecked = Array.from(rowCheckboxes).some((cb) => cb.checked);
+        selectAllCheckbox.checked = allChecked;
+        selectAllCheckbox.indeterminate = someChecked && !allChecked;
+      }
+    }
+
+    // Fonction pour gérer la sélection par plage avec Shift+clic
+    function handleCheckboxClick(event) {
+      const checkbox = event.target;
+
+      // Ignorer si c'est la case "Tout sélectionner"
+      if (checkbox.id === "selectAllCheckbox") {
+        return;
+      }
+
+      // Si Shift est maintenu et qu'il y a une dernière case cochée
+      if (event.shiftKey && lastCheckedCheckbox) {
+        // Si on clique sur la même case, ne rien faire
+        if (lastCheckedCheckbox === checkbox) {
+          return;
+        }
+        event.preventDefault(); // Empêcher le changement d'état immédiat
+
+        // Récupérer toutes les cases à cocher
+        const allCheckboxes = Array.from(
+          document.querySelectorAll(".row-checkbox:not(#selectAllCheckbox)")
+        );
+
+        // Trouver les indices de la dernière case cochée et de la case actuelle
+        const lastIndex = allCheckboxes.indexOf(lastCheckedCheckbox);
+        const currentIndex = allCheckboxes.indexOf(checkbox);
+
+        // Si les indices ne sont pas valides, sortir
+        if (lastIndex === -1 || currentIndex === -1) {
+          return;
+        }
+
+        // Déterminer la plage à sélectionner
+        const startIndex = Math.min(lastIndex, currentIndex);
+        const endIndex = Math.max(lastIndex, currentIndex);
+
+        // L'état cible est basé sur l'état de la dernière case cochée
+        const targetState = lastCheckedCheckbox.checked;
+
+        // Sélectionner toutes les cases dans la plage
+        for (let i = startIndex; i <= endIndex; i++) {
+          allCheckboxes[i].checked = targetState;
+        }
+
+        // Mettre à jour la dernière case cochée à la case actuelle
+        lastCheckedCheckbox = checkbox;
+      } else {
+        // Si pas de Shift, mettre à jour la dernière case cochée
+        if (checkbox.checked) {
+          lastCheckedCheckbox = checkbox;
+        } else {
+          // Si on décoche, garder la dernière case cochée précédente si elle existe
+          const allCheckboxes = Array.from(
+            document.querySelectorAll(".row-checkbox:not(#selectAllCheckbox)")
+          );
+          const currentIndex = allCheckboxes.indexOf(checkbox);
+          // Chercher la dernière case cochée avant celle-ci
+          for (let i = currentIndex - 1; i >= 0; i--) {
+            if (allCheckboxes[i].checked) {
+              lastCheckedCheckbox = allCheckboxes[i];
+              break;
+            }
+          }
+          // Si aucune case n'est cochée avant, chercher après
+          if (!lastCheckedCheckbox || !lastCheckedCheckbox.checked) {
+            for (let i = currentIndex + 1; i < allCheckboxes.length; i++) {
+              if (allCheckboxes[i].checked) {
+                lastCheckedCheckbox = allCheckboxes[i];
+                break;
+              }
+            }
+          }
+          // Si aucune case n'est cochée, réinitialiser
+          if (!lastCheckedCheckbox || !lastCheckedCheckbox.checked) {
+            lastCheckedCheckbox = null;
+          }
+        }
+      }
+
+      // Mettre à jour la case "Tout sélectionner"
+      updateSelectAllCheckbox();
     }
 
     // Fonctions pour gérer les drapeaux
@@ -1596,6 +1724,8 @@
         checkbox.type = "checkbox";
         checkbox.className = "row-checkbox";
         checkbox.dataset.videoUrl = videoUrl;
+        // Ajouter le gestionnaire d'événement pour la sélection par plage
+        checkbox.addEventListener("click", handleCheckboxClick);
         tdCheckbox.appendChild(checkbox);
 
         // Ajouter le bouton de suppression de ligne
