@@ -2149,13 +2149,10 @@
           }
 
           // Fonction pour vérifier la position de la souris et déclencher le défilement
-          function checkMousePositionForScroll() {
+          function checkMousePositionForScroll(mouseY) {
             const scrollThreshold = 100; // Distance en pixels depuis le haut/bas pour déclencher le défilement
             const maxScrollSpeed = 20; // Vitesse maximale de défilement
             const windowHeight = window.innerHeight;
-
-            // Utiliser la dernière position connue de la souris
-            const mouseY = lastMouseY;
 
             // Calculer la distance depuis le haut et le bas
             const distanceFromTop = mouseY;
@@ -2199,30 +2196,39 @@
               stopAutoScroll();
 
               // Initialiser la position de la souris
-              lastMouseY = evt.originalEvent ? evt.originalEvent.clientY : 0;
+              if (evt.originalEvent) {
+                lastMouseY = evt.originalEvent.clientY;
+                checkMousePositionForScroll(lastMouseY);
+              }
 
               // Créer des gestionnaires d'événements pour suivre la position de la souris
+              // Utiliser capture: true pour capturer tous les événements
               const mouseMoveHandler = function (e) {
                 lastMouseY = e.clientY;
+                checkMousePositionForScroll(e.clientY);
               };
 
               const dragOverHandler = function (e) {
+                e.preventDefault(); // Important pour que dragover fonctionne
                 lastMouseY = e.clientY;
+                checkMousePositionForScroll(e.clientY);
               };
 
-              // Attacher les gestionnaires d'événements
-              document.addEventListener("mousemove", mouseMoveHandler);
-              document.addEventListener("dragover", dragOverHandler);
+              // Attacher les gestionnaires d'événements avec capture
+              document.addEventListener("mousemove", mouseMoveHandler, true);
+              document.addEventListener("dragover", dragOverHandler, true);
+              document.addEventListener("drag", dragOverHandler, true);
 
               // Stocker les gestionnaires pour pouvoir les retirer plus tard
               evt.item._mouseMoveHandler = mouseMoveHandler;
               evt.item._dragOverHandler = dragOverHandler;
 
-              // Démarrer la vérification périodique de la position de la souris
-              scrollCheckInterval = setInterval(
-                checkMousePositionForScroll,
-                50
-              ); // Vérifier toutes les 50ms
+              // Démarrer aussi une vérification périodique au cas où
+              scrollCheckInterval = setInterval(function () {
+                if (lastMouseY > 0) {
+                  checkMousePositionForScroll(lastMouseY);
+                }
+              }, 50); // Vérifier toutes les 50ms
               // Vérifier si la ligne déplacée a une case cochée
               const draggedRow = evt.item;
               const draggedCheckbox = draggedRow.querySelector(
@@ -2258,21 +2264,34 @@
               }
             },
             onEnd: function (evt) {
+              // Arrêter le défilement automatique
+              stopAutoScroll();
+
               // Retirer les gestionnaires d'événements
               if (evt.item._mouseMoveHandler) {
                 document.removeEventListener(
                   "mousemove",
-                  evt.item._mouseMoveHandler
+                  evt.item._mouseMoveHandler,
+                  true
                 );
                 delete evt.item._mouseMoveHandler;
               }
               if (evt.item._dragOverHandler) {
                 document.removeEventListener(
                   "dragover",
-                  evt.item._dragOverHandler
+                  evt.item._dragOverHandler,
+                  true
+                );
+                document.removeEventListener(
+                  "drag",
+                  evt.item._dragOverHandler,
+                  true
                 );
                 delete evt.item._dragOverHandler;
               }
+
+              // Réinitialiser la position de la souris
+              lastMouseY = 0;
 
               const draggedRow = evt.item;
               const draggedCheckbox = draggedRow.querySelector(
@@ -2317,6 +2336,13 @@
               stopAutoScroll();
 
               saveTable();
+            },
+            onMove: function (evt, originalEvent) {
+              // Utiliser l'événement onMove de SortableJS pour capturer la position
+              if (originalEvent && originalEvent.clientY !== undefined) {
+                lastMouseY = originalEvent.clientY;
+                checkMousePositionForScroll(originalEvent.clientY);
+              }
             },
           });
         }
