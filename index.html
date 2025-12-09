@@ -2132,7 +2132,8 @@
           // Variable pour le défilement automatique
           let autoScrollInterval = null;
           let autoScrollSpeed = 0;
-          let scrollHandler = null;
+          let scrollCheckInterval = null;
+          let lastMouseY = 0;
 
           // Fonction pour arrêter le défilement automatique
           function stopAutoScroll() {
@@ -2141,9 +2142,52 @@
               autoScrollInterval = null;
               autoScrollSpeed = 0;
             }
-            if (scrollHandler) {
-              document.removeEventListener("mousemove", scrollHandler);
-              scrollHandler = null;
+            if (scrollCheckInterval) {
+              clearInterval(scrollCheckInterval);
+              scrollCheckInterval = null;
+            }
+          }
+
+          // Fonction pour vérifier la position de la souris et déclencher le défilement
+          function checkMousePositionForScroll() {
+            const scrollThreshold = 100; // Distance en pixels depuis le haut/bas pour déclencher le défilement
+            const maxScrollSpeed = 20; // Vitesse maximale de défilement
+            const windowHeight = window.innerHeight;
+
+            // Utiliser la dernière position connue de la souris
+            const mouseY = lastMouseY;
+
+            // Calculer la distance depuis le haut et le bas
+            const distanceFromTop = mouseY;
+            const distanceFromBottom = windowHeight - mouseY;
+
+            // Arrêter le défilement précédent
+            if (autoScrollInterval) {
+              clearInterval(autoScrollInterval);
+              autoScrollInterval = null;
+            }
+
+            // Déterminer la vitesse et la direction du défilement
+            let scrollSpeed = 0;
+
+            if (distanceFromTop < scrollThreshold) {
+              // Proche du haut : défilement vers le haut
+              scrollSpeed =
+                -maxScrollSpeed * (1 - distanceFromTop / scrollThreshold);
+            } else if (distanceFromBottom < scrollThreshold) {
+              // Proche du bas : défilement vers le bas
+              scrollSpeed =
+                maxScrollSpeed * (1 - distanceFromBottom / scrollThreshold);
+            }
+
+            // Démarrer le défilement automatique si nécessaire
+            if (scrollSpeed !== 0) {
+              autoScrollSpeed = scrollSpeed;
+              autoScrollInterval = setInterval(function () {
+                window.scrollBy(0, autoScrollSpeed);
+              }, 10); // Défilement toutes les 10ms pour une animation fluide
+            } else {
+              autoScrollSpeed = 0;
             }
           }
 
@@ -2154,49 +2198,31 @@
               // Arrêter tout défilement en cours
               stopAutoScroll();
 
-              // Créer le gestionnaire de défilement automatique
-              scrollHandler = function (e) {
-                const scrollThreshold = 100; // Distance en pixels depuis le haut/bas pour déclencher le défilement
-                const maxScrollSpeed = 20; // Vitesse maximale de défilement
-                const mouseY = e.clientY;
-                const windowHeight = window.innerHeight;
+              // Initialiser la position de la souris
+              lastMouseY = evt.originalEvent ? evt.originalEvent.clientY : 0;
 
-                // Calculer la distance depuis le haut et le bas
-                const distanceFromTop = mouseY;
-                const distanceFromBottom = windowHeight - mouseY;
-
-                // Arrêter le défilement précédent
-                if (autoScrollInterval) {
-                  clearInterval(autoScrollInterval);
-                  autoScrollInterval = null;
-                }
-
-                // Déterminer la vitesse et la direction du défilement
-                let scrollSpeed = 0;
-
-                if (distanceFromTop < scrollThreshold) {
-                  // Proche du haut : défilement vers le haut
-                  scrollSpeed =
-                    -maxScrollSpeed * (1 - distanceFromTop / scrollThreshold);
-                } else if (distanceFromBottom < scrollThreshold) {
-                  // Proche du bas : défilement vers le bas
-                  scrollSpeed =
-                    maxScrollSpeed * (1 - distanceFromBottom / scrollThreshold);
-                }
-
-                // Démarrer le défilement automatique si nécessaire
-                if (scrollSpeed !== 0) {
-                  autoScrollSpeed = scrollSpeed;
-                  autoScrollInterval = setInterval(function () {
-                    window.scrollBy(0, autoScrollSpeed);
-                  }, 10); // Défilement toutes les 10ms pour une animation fluide
-                } else {
-                  autoScrollSpeed = 0;
-                }
+              // Créer des gestionnaires d'événements pour suivre la position de la souris
+              const mouseMoveHandler = function (e) {
+                lastMouseY = e.clientY;
               };
 
-              // Attacher le gestionnaire d'événement mousemove
-              document.addEventListener("mousemove", scrollHandler);
+              const dragOverHandler = function (e) {
+                lastMouseY = e.clientY;
+              };
+
+              // Attacher les gestionnaires d'événements
+              document.addEventListener("mousemove", mouseMoveHandler);
+              document.addEventListener("dragover", dragOverHandler);
+
+              // Stocker les gestionnaires pour pouvoir les retirer plus tard
+              evt.item._mouseMoveHandler = mouseMoveHandler;
+              evt.item._dragOverHandler = dragOverHandler;
+
+              // Démarrer la vérification périodique de la position de la souris
+              scrollCheckInterval = setInterval(
+                checkMousePositionForScroll,
+                50
+              ); // Vérifier toutes les 50ms
               // Vérifier si la ligne déplacée a une case cochée
               const draggedRow = evt.item;
               const draggedCheckbox = draggedRow.querySelector(
@@ -2232,6 +2258,22 @@
               }
             },
             onEnd: function (evt) {
+              // Retirer les gestionnaires d'événements
+              if (evt.item._mouseMoveHandler) {
+                document.removeEventListener(
+                  "mousemove",
+                  evt.item._mouseMoveHandler
+                );
+                delete evt.item._mouseMoveHandler;
+              }
+              if (evt.item._dragOverHandler) {
+                document.removeEventListener(
+                  "dragover",
+                  evt.item._dragOverHandler
+                );
+                delete evt.item._dragOverHandler;
+              }
+
               const draggedRow = evt.item;
               const draggedCheckbox = draggedRow.querySelector(
                 ".row-checkbox:not(#selectAllCheckbox)"
