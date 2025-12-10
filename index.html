@@ -2134,36 +2134,128 @@
       }
 
       // Fonction pour ajouter/modifier un hyperlien dans un titre (resource-title ou image-title)
-      function editTitleLink(titleElement) {
+      function editTitleLink(titleElement, event) {
         const encryptedUserId = localStorage.getItem("adminUserId");
         if (!encryptedUserId) return;
 
-        const currentLink = titleElement.querySelector("a");
-        const currentUrl = currentLink ? currentLink.href : "";
-        const currentText = extractText(titleElement);
+        // Vérifier s'il y a une sélection de texte
+        const selection = window.getSelection();
+        let hasSelection = false;
+        let selectedText = "";
+        let range = null;
 
-        const newUrl = prompt(
-          "Entrez l'URL du lien (laissez vide pour supprimer le lien) :",
-          currentUrl
-        );
+        if (selection.rangeCount > 0) {
+          range = selection.getRangeAt(0);
+          selectedText = range.toString().trim();
+
+          // Vérifier si la sélection est dans le titre
+          // On vérifie si le conteneur commun ou les conteneurs de début/fin sont dans le titre
+          const commonAncestor = range.commonAncestorContainer;
+          const startContainer = range.startContainer;
+          const endContainer = range.endContainer;
+
+          // Fonction pour vérifier si un nœud est dans le titre
+          const isInTitle = (node) => {
+            if (!node) return false;
+            // Si c'est un nœud texte, vérifier son parent
+            if (node.nodeType === Node.TEXT_NODE) {
+              return titleElement.contains(node.parentNode);
+            }
+            // Sinon vérifier directement
+            return titleElement.contains(node) || titleElement === node;
+          };
+
+          if (
+            selectedText.length > 0 &&
+            (isInTitle(commonAncestor) ||
+              isInTitle(startContainer) ||
+              isInTitle(endContainer) ||
+              titleElement.contains(commonAncestor) ||
+              titleElement.contains(startContainer) ||
+              titleElement.contains(endContainer))
+          ) {
+            hasSelection = true;
+          }
+        }
+
+        // Si pas de sélection, vérifier si on a cliqué sur un lien existant
+        let clickedLink = null;
+        if (!hasSelection && event && event.target) {
+          clickedLink = event.target.closest("a");
+          if (clickedLink && !titleElement.contains(clickedLink)) {
+            clickedLink = null;
+          }
+        }
+
+        const currentUrl = clickedLink
+          ? clickedLink.href
+          : hasSelection
+          ? ""
+          : titleElement.querySelector("a")
+          ? titleElement.querySelector("a").href
+          : "";
+
+        const promptText = hasSelection
+          ? `Entrez l'URL du lien pour "${selectedText}" (laissez vide pour supprimer) :`
+          : clickedLink
+          ? "Entrez l'URL du lien (laissez vide pour supprimer) :"
+          : "Entrez l'URL du lien pour tout le titre (laissez vide pour supprimer) :";
+
+        const newUrl = prompt(promptText, currentUrl);
 
         if (newUrl === null) return; // Annulé
 
-        if (newUrl.trim()) {
-          // Créer ou modifier le lien
-          if (currentLink) {
-            currentLink.href = newUrl.trim();
-            currentLink.target = "_blank";
+        if (hasSelection && range) {
+          // Créer un lien uniquement sur la sélection
+          if (newUrl.trim()) {
+            // Supprimer la sélection
+            range.deleteContents();
+
+            // Créer le lien
+            const link = document.createElement("a");
+            link.href = newUrl.trim();
+            link.target = "_blank";
+            link.textContent = selectedText;
+
+            // Insérer le lien à la position de la sélection
+            range.insertNode(link);
+
+            // Nettoyer la sélection
+            selection.removeAllRanges();
+          }
+          // Si newUrl est vide, on ne fait rien (on supprime juste la sélection)
+        } else if (clickedLink) {
+          // Modifier ou supprimer le lien sur lequel on a cliqué
+          if (newUrl.trim()) {
+            clickedLink.href = newUrl.trim();
+            clickedLink.target = "_blank";
           } else {
-            // Créer un nouveau lien autour du texte existant
-            const text = currentText || titleElement.textContent || "";
-            titleElement.innerHTML = `<a href="${newUrl.trim()}" target="_blank">${text}</a>`;
+            // Remplacer le lien par son texte
+            const text = clickedLink.textContent || clickedLink.innerText || "";
+            clickedLink.replaceWith(document.createTextNode(text));
           }
         } else {
-          // Supprimer le lien mais garder le texte
-          if (currentLink) {
-            const text = currentLink.textContent || currentLink.innerText || "";
-            titleElement.innerHTML = text;
+          // Comportement par défaut : créer un lien sur tout le titre
+          const currentLink = titleElement.querySelector("a");
+          const currentText = extractText(titleElement);
+
+          if (newUrl.trim()) {
+            // Créer ou modifier le lien
+            if (currentLink) {
+              currentLink.href = newUrl.trim();
+              currentLink.target = "_blank";
+            } else {
+              // Créer un nouveau lien autour du texte existant
+              const text = currentText || titleElement.textContent || "";
+              titleElement.innerHTML = `<a href="${newUrl.trim()}" target="_blank">${text}</a>`;
+            }
+          } else {
+            // Supprimer le lien mais garder le texte
+            if (currentLink) {
+              const text =
+                currentLink.textContent || currentLink.innerText || "";
+              titleElement.innerHTML = text;
+            }
           }
         }
 
@@ -2211,7 +2303,7 @@
           const resourceTitle = e.target.closest(".resource-title");
           if (resourceTitle) {
             e.preventDefault();
-            editTitleLink(resourceTitle);
+            editTitleLink(resourceTitle, e);
             return;
           }
 
@@ -2219,7 +2311,7 @@
           const imageTitle = e.target.closest(".image-title");
           if (imageTitle) {
             e.preventDefault();
-            editTitleLink(imageTitle);
+            editTitleLink(imageTitle, e);
             return;
           }
         });
@@ -2287,7 +2379,7 @@
                 ? container.closest(".resource-title")
                 : container.parentElement?.closest(".resource-title");
             if (resourceTitle) {
-              editTitleLink(resourceTitle);
+              editTitleLink(resourceTitle, null);
               return;
             }
 
@@ -2297,7 +2389,7 @@
                 ? container.closest(".image-title")
                 : container.parentElement?.closest(".image-title");
             if (imageTitle) {
-              editTitleLink(imageTitle);
+              editTitleLink(imageTitle, null);
               return;
             }
           }
