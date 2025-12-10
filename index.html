@@ -223,6 +223,20 @@
         word-break: break-word;
       }
 
+      /* Styles pour les liens dans les titres */
+      .resource-title a,
+      .image-title a {
+        color: #0066cc;
+        text-decoration: underline;
+        cursor: pointer;
+      }
+
+      .resource-title a:hover,
+      .image-title a:hover {
+        color: #0052a3;
+        text-decoration: underline;
+      }
+
       .resource-title-wrapper {
         width: 100%;
         text-align: center;
@@ -1954,6 +1968,178 @@
           alert("URL YouTube invalide");
         }
       }
+
+      // Fonction pour extraire l'URL d'un lien dans un élément
+      function extractLinkUrl(element) {
+        const link = element.querySelector("a");
+        return link ? link.href : null;
+      }
+
+      // Fonction pour extraire le texte d'un élément (sans les balises HTML)
+      function extractText(element) {
+        const link = element.querySelector("a");
+        if (link) {
+          return link.textContent || link.innerText || "";
+        }
+        return element.textContent || element.innerText || "";
+      }
+
+      // Fonction pour ajouter/modifier un hyperlien sur une miniature vidéo
+      function editThumbnailLink(thumbnailElement) {
+        const encryptedUserId = localStorage.getItem("adminUserId");
+        if (!encryptedUserId) return;
+
+        const linkElement = thumbnailElement.closest("a");
+        const currentUrl = linkElement ? linkElement.href : "";
+        const newUrl = prompt(
+          "Entrez l'URL du lien (laissez vide pour supprimer) :",
+          currentUrl
+        );
+
+        if (newUrl === null) return; // Annulé
+
+        const td = thumbnailElement.closest("td");
+        const img = thumbnailElement;
+        const imgSrc = img.src;
+        const editIcon = td.querySelector(".edit-icon");
+
+        if (newUrl.trim()) {
+          // Créer un nouveau lien
+          const newLink = document.createElement("a");
+          newLink.href = newUrl.trim();
+          newLink.target = "_blank";
+          newLink.appendChild(img.cloneNode(true));
+          linkElement.replaceWith(newLink);
+        } else {
+          // Supprimer le lien mais garder l'image
+          const newImg = img.cloneNode(true);
+          linkElement.replaceWith(newImg);
+        }
+
+        saveTable();
+      }
+
+      // Fonction pour ajouter/modifier un hyperlien dans un titre (resource-title ou image-title)
+      function editTitleLink(titleElement) {
+        const encryptedUserId = localStorage.getItem("adminUserId");
+        if (!encryptedUserId) return;
+
+        const currentLink = titleElement.querySelector("a");
+        const currentUrl = currentLink ? currentLink.href : "";
+        const currentText = extractText(titleElement);
+
+        const newUrl = prompt(
+          "Entrez l'URL du lien (laissez vide pour supprimer le lien) :",
+          currentUrl
+        );
+
+        if (newUrl === null) return; // Annulé
+
+        if (newUrl.trim()) {
+          // Créer ou modifier le lien
+          if (currentLink) {
+            currentLink.href = newUrl.trim();
+            currentLink.target = "_blank";
+          } else {
+            // Créer un nouveau lien autour du texte existant
+            const text = currentText || titleElement.textContent || "";
+            titleElement.innerHTML = `<a href="${newUrl.trim()}" target="_blank">${text}</a>`;
+          }
+        } else {
+          // Supprimer le lien mais garder le texte
+          if (currentLink) {
+            const text = currentLink.textContent || currentLink.innerText || "";
+            titleElement.innerHTML = text;
+          }
+        }
+
+        saveTable();
+      }
+
+      // Fonction pour gérer le menu contextuel (clic droit)
+      function setupContextMenu() {
+        document.addEventListener("contextmenu", function (e) {
+          const encryptedUserId = localStorage.getItem("adminUserId");
+          if (!encryptedUserId) return;
+
+          // Vérifier si c'est une miniature vidéo
+          const thumb = e.target.closest(".thumb");
+          if (thumb) {
+            e.preventDefault();
+            editThumbnailLink(thumb);
+            return;
+          }
+
+          // Vérifier si c'est un titre de ressource
+          const resourceTitle = e.target.closest(".resource-title");
+          if (resourceTitle) {
+            e.preventDefault();
+            editTitleLink(resourceTitle);
+            return;
+          }
+
+          // Vérifier si c'est un titre d'image
+          const imageTitle = e.target.closest(".image-title");
+          if (imageTitle) {
+            e.preventDefault();
+            editTitleLink(imageTitle);
+            return;
+          }
+        });
+      }
+
+      // Fonction pour gérer le raccourci Ctrl+K
+      function setupKeyboardShortcut() {
+        document.addEventListener("keydown", function (e) {
+          const encryptedUserId = localStorage.getItem("adminUserId");
+          if (!encryptedUserId) return;
+
+          // Ctrl+K ou Cmd+K
+          if ((e.ctrlKey || e.metaKey) && e.key === "k") {
+            e.preventDefault();
+
+            const selection = window.getSelection();
+            if (!selection.rangeCount) return;
+
+            const range = selection.getRangeAt(0);
+            const container = range.commonAncestorContainer;
+
+            // Vérifier si la sélection est dans une miniature vidéo
+            const thumb =
+              container.nodeType === Node.ELEMENT_NODE
+                ? container.closest(".thumb")
+                : container.parentElement?.closest(".thumb");
+            if (thumb) {
+              editThumbnailLink(thumb);
+              return;
+            }
+
+            // Vérifier si la sélection est dans un titre de ressource
+            const resourceTitle =
+              container.nodeType === Node.ELEMENT_NODE
+                ? container.closest(".resource-title")
+                : container.parentElement?.closest(".resource-title");
+            if (resourceTitle) {
+              editTitleLink(resourceTitle);
+              return;
+            }
+
+            // Vérifier si la sélection est dans un titre d'image
+            const imageTitle =
+              container.nodeType === Node.ELEMENT_NODE
+                ? container.closest(".image-title")
+                : container.parentElement?.closest(".image-title");
+            if (imageTitle) {
+              editTitleLink(imageTitle);
+              return;
+            }
+          }
+        });
+      }
+
+      // Initialiser les gestionnaires d'événements
+      setupContextMenu();
+      setupKeyboardShortcut();
 
       function addVideo() {
         const url = document.getElementById("videoUrl").value.trim();
