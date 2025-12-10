@@ -632,9 +632,14 @@
             const caption = block.querySelector(".image-title");
 
             if (img && caption) {
+              // Vérifier si l'image est dans un lien
+              const linkElement = img.closest("a");
+              const imageLink = linkElement ? linkElement.href : null;
+
               ressourcesJSON.images.push({
                 src: img.src, // Base64 de l'image
                 titre: caption.innerHTML || "",
+                link: imageLink || null, // URL du lien si l'image est cliquable
               });
             }
           });
@@ -780,10 +785,16 @@
           // Images
           if (item.ressources.images && item.ressources.images.length > 0) {
             item.ressources.images.forEach((image) => {
+              // Si l'image a un lien, l'envelopper dans un <a>
+              const imgTag = `<img src="${image.src}" class="resource-img" alt="Ressource">`;
+              const imgWithLink = image.link
+                ? `<a href="${image.link}" target="_blank">${imgTag}</a>`
+                : imgTag;
+
               ressourcesHTML += `
                 <div class="resource-block">
                   <button class="delete-btn" onclick="this.parentElement.remove(); saveTable();">❌</button>
-                  <img src="${image.src}" class="resource-img" alt="Ressource">
+                  ${imgWithLink}
                   <div class="image-title" contenteditable="true">${image.titre}</div>
                 </div>
               `;
@@ -1984,44 +1995,40 @@
         return element.textContent || element.innerText || "";
       }
 
-      // Fonction pour vérifier si un élément est dans la cellule vidéo
-      function isInVideoCell(element) {
-        const td = element.closest("td");
-        if (!td) return false;
-        const row = td.closest("tr");
-        if (!row) return false;
-        // La cellule vidéo est le deuxième td (index 1, après la checkbox)
-        const cells = Array.from(row.querySelectorAll("td"));
-        const cellIndex = cells.indexOf(td);
-        return cellIndex === 1; // Index 1 = cellule vidéo
-      }
-
-      // Fonction pour ajouter/modifier un hyperlien sur une miniature vidéo
-      function editThumbnailLink(element) {
+      // Fonction pour ajouter/modifier un hyperlien sur une miniature de ressource
+      function editResourceImageLink(element) {
         const encryptedUserId = localStorage.getItem("adminUserId");
         if (!encryptedUserId) return;
 
-        // Trouver la cellule vidéo
-        let td;
-        if (element.classList && element.classList.contains("thumb")) {
+        // Trouver l'image de ressource ou le resource-block
+        let img;
+        let resourceBlock;
+
+        if (element.classList && element.classList.contains("resource-img")) {
           // Si c'est l'image elle-même
-          td = element.closest("td");
-        } else if (isInVideoCell(element)) {
-          // Si c'est la cellule entière
-          td = element.closest("td");
+          img = element;
+          resourceBlock = element.closest(".resource-block");
+        } else if (
+          element.classList &&
+          element.classList.contains("resource-block")
+        ) {
+          // Si c'est le bloc entier
+          resourceBlock = element;
+          img = resourceBlock.querySelector(".resource-img");
         } else {
-          return;
+          // Chercher le resource-block parent
+          resourceBlock = element.closest(".resource-block");
+          if (resourceBlock) {
+            img = resourceBlock.querySelector(".resource-img");
+          }
         }
 
-        if (!td) return;
+        if (!img || !resourceBlock) return;
 
-        // Trouver le lien et l'image existants
-        const linkElement = td.querySelector("a");
-        const img = td.querySelector(".thumb");
-
-        if (!img) return;
-
+        // Trouver le lien existant (s'il y en a un)
+        const linkElement = img.closest("a");
         const currentUrl = linkElement ? linkElement.href : "";
+
         const newUrl = prompt(
           "Entrez l'URL du lien (laissez vide pour supprimer) :",
           currentUrl
@@ -2096,18 +2103,19 @@
           const encryptedUserId = localStorage.getItem("adminUserId");
           if (!encryptedUserId) return;
 
-          // Vérifier si c'est dans la cellule vidéo (le "carré")
-          if (isInVideoCell(e.target)) {
+          // Vérifier si c'est une image de ressource (miniature dans la colonne Ressources)
+          const resourceImg = e.target.closest(".resource-img");
+          if (resourceImg) {
             e.preventDefault();
-            editThumbnailLink(e.target);
+            editResourceImageLink(resourceImg);
             return;
           }
 
-          // Vérifier si c'est une miniature vidéo directement
-          const thumb = e.target.closest(".thumb");
-          if (thumb) {
+          // Vérifier si c'est un resource-block (le "carré" de la miniature)
+          const resourceBlock = e.target.closest(".resource-block");
+          if (resourceBlock) {
             e.preventDefault();
-            editThumbnailLink(thumb);
+            editResourceImageLink(resourceBlock);
             return;
           }
 
@@ -2145,24 +2153,23 @@
             const range = selection.getRangeAt(0);
             const container = range.commonAncestorContainer;
 
-            // Vérifier si la sélection est dans la cellule vidéo
-            const targetElement =
+            // Vérifier si la sélection est dans une image de ressource
+            const resourceImg =
               container.nodeType === Node.ELEMENT_NODE
-                ? container
-                : container.parentElement;
-
-            if (targetElement && isInVideoCell(targetElement)) {
-              editThumbnailLink(targetElement);
+                ? container.closest(".resource-img")
+                : container.parentElement?.closest(".resource-img");
+            if (resourceImg) {
+              editResourceImageLink(resourceImg);
               return;
             }
 
-            // Vérifier si la sélection est dans une miniature vidéo directement
-            const thumb =
+            // Vérifier si la sélection est dans un resource-block
+            const resourceBlock =
               container.nodeType === Node.ELEMENT_NODE
-                ? container.closest(".thumb")
-                : container.parentElement?.closest(".thumb");
-            if (thumb) {
-              editThumbnailLink(thumb);
+                ? container.closest(".resource-block")
+                : container.parentElement?.closest(".resource-block");
+            if (resourceBlock) {
+              editResourceImageLink(resourceBlock);
               return;
             }
 
