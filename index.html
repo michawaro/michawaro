@@ -1995,6 +1995,79 @@
         return element.textContent || element.innerText || "";
       }
 
+      // Fonction pour vérifier si un élément est dans la cellule vidéo
+      function isInVideoCell(element) {
+        const td = element.closest("td");
+        if (!td) return false;
+        const row = td.closest("tr");
+        if (!row) return false;
+        // La cellule vidéo est le deuxième td (index 1, après la checkbox)
+        const cells = Array.from(row.querySelectorAll("td"));
+        const cellIndex = cells.indexOf(td);
+        return cellIndex === 1; // Index 1 = cellule vidéo
+      }
+
+      // Fonction pour ajouter/modifier un hyperlien sur une miniature vidéo YouTube
+      function editVideoThumbnailLink(element) {
+        const encryptedUserId = localStorage.getItem("adminUserId");
+        if (!encryptedUserId) return;
+
+        // Trouver la cellule vidéo et l'image
+        let td;
+        let img;
+        let linkElement;
+
+        if (element.classList && element.classList.contains("thumb")) {
+          // Si c'est l'image elle-même
+          img = element;
+          td = img.closest("td");
+          linkElement = img.closest("a");
+        } else if (isInVideoCell(element)) {
+          // Si c'est la cellule entière
+          td = element.closest("td");
+          img = td.querySelector(".thumb");
+          linkElement = td.querySelector("a");
+        } else {
+          return;
+        }
+
+        if (!img || !td) return;
+
+        const currentUrl = linkElement ? linkElement.href : "";
+        const newUrl = prompt(
+          "Entrez l'URL du lien (laissez vide pour supprimer) :",
+          currentUrl
+        );
+
+        if (newUrl === null) return; // Annulé
+
+        // Sauvegarder l'icône d'édition si elle existe
+        const editIcon = td.querySelector(".edit-icon");
+
+        if (newUrl.trim()) {
+          // Créer ou modifier le lien
+          if (linkElement) {
+            linkElement.href = newUrl.trim();
+            linkElement.target = "_blank";
+          } else {
+            // Créer un nouveau lien autour de l'image
+            const newLink = document.createElement("a");
+            newLink.href = newUrl.trim();
+            newLink.target = "_blank";
+            newLink.appendChild(img.cloneNode(true));
+            img.replaceWith(newLink);
+          }
+        } else {
+          // Supprimer le lien mais garder l'image
+          if (linkElement) {
+            const newImg = img.cloneNode(true);
+            linkElement.replaceWith(newImg);
+          }
+        }
+
+        saveTable();
+      }
+
       // Fonction pour ajouter/modifier un hyperlien sur une miniature de ressource
       function editResourceImageLink(element) {
         const encryptedUserId = localStorage.getItem("adminUserId");
@@ -2103,6 +2176,21 @@
           const encryptedUserId = localStorage.getItem("adminUserId");
           if (!encryptedUserId) return;
 
+          // Vérifier si c'est une miniature vidéo YouTube (colonne Vidéo)
+          const thumb = e.target.closest(".thumb");
+          if (thumb) {
+            e.preventDefault();
+            editVideoThumbnailLink(thumb);
+            return;
+          }
+
+          // Vérifier si c'est dans la cellule vidéo (le "carré" de la miniature vidéo)
+          if (isInVideoCell(e.target)) {
+            e.preventDefault();
+            editVideoThumbnailLink(e.target);
+            return;
+          }
+
           // Vérifier si c'est une image de ressource (miniature dans la colonne Ressources)
           const resourceImg = e.target.closest(".resource-img");
           if (resourceImg) {
@@ -2152,6 +2240,26 @@
 
             const range = selection.getRangeAt(0);
             const container = range.commonAncestorContainer;
+
+            // Vérifier si la sélection est dans une miniature vidéo YouTube
+            const thumb =
+              container.nodeType === Node.ELEMENT_NODE
+                ? container.closest(".thumb")
+                : container.parentElement?.closest(".thumb");
+            if (thumb) {
+              editVideoThumbnailLink(thumb);
+              return;
+            }
+
+            // Vérifier si la sélection est dans la cellule vidéo
+            const targetElement =
+              container.nodeType === Node.ELEMENT_NODE
+                ? container
+                : container.parentElement;
+            if (targetElement && isInVideoCell(targetElement)) {
+              editVideoThumbnailLink(targetElement);
+              return;
+            }
 
             // Vérifier si la sélection est dans une image de ressource
             const resourceImg =
