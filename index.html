@@ -2,7 +2,75 @@
 <html lang="fr">
   <head>
     <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Michawaro – Apprendre, Enseigner, Partager</title>
+    <meta
+      name="description"
+      content="Michawaro : plateforme éducative avec vidéos YouTube, ressources pédagogiques et contenus organisés par niveau. Apprendre, enseigner et partager des connaissances."
+    />
+    <meta
+      name="keywords"
+      content="éducation, vidéos éducatives, ressources pédagogiques, apprentissage, enseignement, YouTube éducatif"
+    />
+    <meta name="author" content="Michawaro" />
+    <meta name="robots" content="index, follow" />
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://michawaro.github.io/michawaro/" />
+    <meta
+      property="og:title"
+      content="Michawaro – Apprendre, Enseigner, Partager"
+    />
+    <meta
+      property="og:description"
+      content="Plateforme éducative avec vidéos YouTube et ressources pédagogiques organisées par niveau."
+    />
+    <meta
+      property="og:image"
+      content="https://michawaro.github.io/michawaro/og-image.jpg"
+    />
+
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image" />
+    <meta
+      property="twitter:url"
+      content="https://michawaro.github.io/michawaro/"
+    />
+    <meta
+      property="twitter:title"
+      content="Michawaro – Apprendre, Enseigner, Partager"
+    />
+    <meta
+      property="twitter:description"
+      content="Plateforme éducative avec vidéos YouTube et ressources pédagogiques organisées par niveau."
+    />
+    <meta
+      property="twitter:image"
+      content="https://michawaro.github.io/michawaro/og-image.jpg"
+    />
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+
+    <!-- Structured Data (JSON-LD) -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "EducationalOrganization",
+        "name": "Michawaro",
+        "description": "Plateforme éducative avec vidéos YouTube et ressources pédagogiques organisées par niveau",
+        "url": "https://michawaro.github.io/michawaro/",
+        "logo": "https://michawaro.github.io/michawaro/logo.png",
+        "sameAs": [],
+        "educationalCredentialAwarded": "Ressources pédagogiques",
+        "hasOfferCatalog": {
+          "@type": "OfferCatalog",
+          "name": "Catalogue de ressources éducatives",
+          "itemListElement": []
+        }
+      }
+    </script>
     <link
       href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600&display=swap"
       rel="stylesheet"
@@ -786,7 +854,7 @@
           if (item.ressources.images && item.ressources.images.length > 0) {
             item.ressources.images.forEach((image) => {
               // Si l'image a un lien, l'envelopper dans un <a>
-              const imgTag = `<img src="${image.src}" class="resource-img" alt="Ressource">`;
+              const imgTag = `<img src="${image.src}" class="resource-img" alt="Ressource pédagogique" loading="lazy">`;
               const imgWithLink = image.link
                 ? `<a href="${image.link}" target="_blank">${imgTag}</a>`
                 : imgTag;
@@ -1447,7 +1515,7 @@
   </script>
 
   <body>
-    <header>
+    <header role="banner">
       <h1>MICHAWARO</h1>
       <p>Apprendre, Enseigner, Partager</p>
     </header>
@@ -1480,6 +1548,7 @@
       />
       <button
         id="connectBtn"
+        aria-label="Se connecter en tant qu'administrateur"
         style="
           background: #89d6e2;
           color: #fff;
@@ -1502,6 +1571,7 @@
         </p>
         <button
           id="deleteSelectedBtn"
+          aria-label="Supprimer les vidéos sélectionnées"
           style="
             background: #d32f2f;
             color: #fff;
@@ -1519,6 +1589,7 @@
         </button>
         <button
           id="saveBtn"
+          aria-label="Sauvegarder les modifications"
           style="
             background: #e84e9b;
             color: #fff;
@@ -1547,12 +1618,17 @@
       "
     >
       <!-- Cartouche de filtre Niveau + Contenu -->
-      <div class="cartouche" id="niveau-filter">
+      <div
+        class="cartouche"
+        id="niveau-filter"
+        role="complementary"
+        aria-label="Filtres de recherche"
+      >
         <div
           class="cartouche-header"
           style="background: linear-gradient(90deg, #fce86e 0%, #e84e9b 100%)"
         >
-          FILTRES
+          <h3 style="margin: 0; font-size: inherit">FILTRES</h3>
         </div>
         <div class="cartouche-content">
           <!-- contenu du cartouche filtre (copié depuis l'ancien) -->
@@ -1627,12 +1703,17 @@
       </div>
 
       <!-- Cartouche Mot de passe -->
-      <div class="cartouche" id="motdepasse-cartouche">
+      <div
+        class="cartouche"
+        id="motdepasse-cartouche"
+        role="complementary"
+        aria-label="Demande de mot de passe"
+      >
         <div
           class="cartouche-header"
           style="background: linear-gradient(90deg, #fce86e 0%, #89d6e2 100%)"
         >
-          MOT DE PASSE
+          <h3 style="margin: 0; font-size: inherit">MOT DE PASSE</h3>
         </div>
         <div class="cartouche-content">
           <a
@@ -1684,8 +1765,13 @@
       </div>
     </div>
 
-    <main>
-      <table id="videoTable">
+    <main role="main">
+      <h2 class="sr-only">Catalogue de vidéos éducatives</h2>
+      <table
+        id="videoTable"
+        role="table"
+        aria-label="Tableau des vidéos éducatives organisées par niveau et contenu"
+      >
         <thead>
           <tr>
             <th>
@@ -1694,12 +1780,13 @@
                 id="selectAllCheckbox"
                 class="row-checkbox"
                 title="Tout sélectionner"
+                aria-label="Sélectionner toutes les vidéos"
               />
             </th>
-            <th>Vidéo</th>
-            <th>Niveau</th>
-            <th>Contenu</th>
-            <th>Ressources (voir commentaires des vidéos)</th>
+            <th scope="col">Vidéo</th>
+            <th scope="col">Niveau</th>
+            <th scope="col">Contenu</th>
+            <th scope="col">Ressources (voir commentaires des vidéos)</th>
           </tr>
         </thead>
         <tbody id="tableBody"></tbody>
@@ -1764,7 +1851,7 @@
         tdVideo.style.position = "relative"; // Pour positionner le bouton de suppression
         tdVideo.innerHTML = `
     <a href="${videoUrl}" target="_blank">
-      <img class="thumb" src="https://img.youtube.com/vi/${id}/mqdefault.jpg" alt="Miniature vidéo">
+      <img class="thumb" src="https://img.youtube.com/vi/${id}/mqdefault.jpg" alt="Miniature vidéo YouTube" loading="lazy" width="320" height="180">
     </a>
     <span class="edit-icon" style="cursor:pointer;display:block;margin-top:5px;color:#999;font-size:12px;" onclick="changeVideoUrl(this)">✏️ Modifier</span>
   `;
@@ -1929,6 +2016,8 @@
               const img = document.createElement("img");
               img.src = reader.result;
               img.className = "resource-img";
+              img.alt = "Ressource pédagogique";
+              img.loading = "lazy";
 
               const caption = document.createElement("div");
               caption.className = "image-title";
@@ -1970,7 +2059,7 @@
           const newId = getYouTubeId(newUrl);
           td.innerHTML = `
       <a href="${newUrl}" target="_blank">
-        <img class="thumb" src="https://img.youtube.com/vi/${newId}/mqdefault.jpg" alt="Miniature vidéo">
+        <img class="thumb" src="https://img.youtube.com/vi/${newId}/mqdefault.jpg" alt="Miniature vidéo YouTube" loading="lazy" width="320" height="180">
       </a>
       <span class="edit-icon" style="cursor:pointer;display:block;margin-top:5px;color:#999;font-size:12px;" onclick="changeVideoUrl(this)">✏️ Modifier</span>
     `;
