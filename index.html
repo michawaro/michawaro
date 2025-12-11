@@ -2558,7 +2558,8 @@
           ".resource-container"
         );
         resourceContainers.forEach((container) => {
-          container.style.pointerEvents = "none";
+          // Laisser les liens cliquables en mode public
+          container.style.pointerEvents = "auto";
         });
 
         // Désactiver les icônes d'édition d'URL
