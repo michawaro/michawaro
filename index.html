@@ -308,6 +308,40 @@
         text-decoration: underline;
       }
 
+      /* Overlay de chargement */
+      #loadingOverlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(255, 255, 255, 0.8);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 2000;
+        font-size: 1.1rem;
+        color: #333;
+        backdrop-filter: blur(2px);
+      }
+
+      #loadingOverlay.hidden {
+        display: none;
+      }
+
+      .spinner {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        border: 4px solid #e0e0e0;
+        border-top-color: #e84e9b;
+        animation: spin 0.9s linear infinite;
+        margin-right: 10px;
+      }
+
+      @keyframes spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+
       .resource-title-wrapper {
         width: 100%;
         text-align: center;
@@ -656,6 +690,23 @@
       "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5mcWFpamVlb3p5cGt2a3J4ZndoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI4NDAzMDUsImV4cCI6MjA2ODQxNjMwNX0.6z0kRlR_qUSxP_jPngOfF1mcNbiMZBS3RsategLrjxo"; // Clé publique (anonyme) — attention à la config RLS
 
     const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    let overlayShown = false;
+
+    function showLoading() {
+      const overlay = document.getElementById("loadingOverlay");
+      if (overlay && overlay.classList.contains("hidden")) {
+        overlay.classList.remove("hidden");
+        overlayShown = true;
+      }
+    }
+
+    function hideLoading() {
+      const overlay = document.getElementById("loadingOverlay");
+      if (overlay) {
+        overlay.classList.add("hidden");
+      }
+      overlayShown = false;
+    }
 
     async function saveToSupabase() {
       const userIdElement = document.getElementById("userId");
@@ -726,20 +777,12 @@
         };
       });
 
-      // LOG pour diagnostic
-      console.log(
-        "Données à sauvegarder :",
-        JSON.stringify(videosData, null, 2)
-      );
-
       // Sauvegarde incrémentale optimisée pour multi-supports
       if (videosData.length > 0) {
         let successCount = 0;
         let errorCount = 0;
 
         for (const videoData of videosData) {
-          // LOG pour chaque vidéo
-          console.log("Vidéo à sauvegarder :", videoData);
           // Vérifier si la vidéo existe déjà pour cet utilisateur
           const { data: existingData } = await supabaseClient
             .from("videos")
@@ -819,24 +862,13 @@
 
       const { data, error } = await query;
 
-      // LOG pour diagnostic
-      console.log("Chargement avec userId:", userId);
-      console.log("Données chargées depuis Supabase :", data);
-      console.log("Nombre de lignes chargées :", data ? data.length : 0);
-
       if (error) {
         console.warn("Pas de données Supabase ou erreur :", error.message);
         return;
       }
 
-      console.log(
-        "Vidage du tableau et chargement de",
-        data.length,
-        "éléments"
-      );
       tbody.innerHTML = "";
       data.forEach((item, index) => {
-        console.log(`Chargement élément ${index + 1}:`, item.video_url);
         // Convertir les ressources JSON en HTML
         let ressourcesHTML =
           '<div class="resource-container"><div class="resource-title-wrapper"><div class="resource-title" contenteditable="true">Titre</div></div><div class="drop-zone"></div></div>';
@@ -963,6 +995,7 @@
         return;
       }
 
+      showLoading();
       isLoading = true;
       console.log("Début du chargement des données");
 
@@ -987,6 +1020,7 @@
         }
       } finally {
         isLoading = false;
+        hideLoading();
       }
     }
 
@@ -1518,6 +1552,10 @@
   </script>
 
   <body>
+    <div id="loadingOverlay" class="hidden" aria-live="polite" aria-busy="true">
+      <div class="spinner" aria-hidden="true"></div>
+      <div>Chargement des vidéos...</div>
+    </div>
     <header role="banner">
       <h1>MICHAWARO</h1>
       <p>
