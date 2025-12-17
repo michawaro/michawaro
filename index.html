@@ -708,7 +708,38 @@
       overlayShown = false;
     }
 
+    // Variable pour éviter les appels multiples simultanés
+    let isSaving = false;
+    let saveTimeout = null;
+
     async function saveToSupabase() {
+      // Empêcher les appels multiples simultanés
+      if (isSaving) {
+        console.log("Sauvegarde déjà en cours, ignoré...");
+        return;
+      }
+
+      // Debounce : annuler le précédent appel s'il y en a un
+      if (saveTimeout) {
+        clearTimeout(saveTimeout);
+      }
+
+      // Attendre un peu avant de sauvegarder (debounce)
+      return new Promise((resolve) => {
+        saveTimeout = setTimeout(async () => {
+          isSaving = true;
+
+          try {
+            await performSave();
+          } finally {
+            isSaving = false;
+            resolve();
+          }
+        }, 500); // Attendre 500ms avant de sauvegarder
+      });
+    }
+
+    async function performSave() {
       const userIdElement = document.getElementById("userId");
       if (!userIdElement) {
         console.warn("Élément userId non trouvé");
@@ -783,47 +814,88 @@
         let errorCount = 0;
 
         for (const videoData of videosData) {
-          // Vérifier si la vidéo existe déjà pour cet utilisateur
-          const { data: existingData } = await supabaseClient
-            .from("videos")
-            .select("id")
-            .eq("user_id", userId)
-            .eq("video_url", videoData.video_url)
-            .single();
+          try {
+            // Vérifier si la vidéo existe déjà pour cet utilisateur
+            // Utiliser maybeSingle() au lieu de single() pour gérer les cas où il y a plusieurs doublons
+            const { data: existingData, error: checkError } =
+              await supabaseClient
+                .from("videos")
+                .select("id")
+                .eq("user_id", userId)
+                .eq("video_url", videoData.video_url)
+                .maybeSingle();
 
-          if (existingData) {
-            // Mettre à jour la vidéo existante
-            const { error: updateError } = await supabaseClient
-              .from("videos")
-              .update({
-                niveau: videoData.niveau,
-                contenu: videoData.contenu,
-                ressources: videoData.ressources, // Structure JSON
-                ordre: videoData.ordre,
-              })
-              .eq("id", existingData.id);
-
-            if (updateError) {
+            if (checkError && checkError.code !== "PGRST116") {
+              // PGRST116 = "no rows returned", ce qui est normal si la vidéo n'existe pas
               console.error(
-                "Erreur lors de la mise à jour:",
-                updateError.message
+                "Erreur lors de la vérification:",
+                checkError.message
               );
               errorCount++;
-            } else {
-              successCount++;
+              continue;
             }
-          } else {
-            // Insérer une nouvelle vidéo
-            const { error: insertError } = await supabaseClient
-              .from("videos")
-              .insert(videoData);
 
-            if (insertError) {
-              console.error("Erreur lors de l'insertion:", insertError.message);
-              errorCount++;
+            if (existingData) {
+              // Mettre à jour la vidéo existante
+              const { error: updateError } = await supabaseClient
+                .from("videos")
+                .update({
+                  niveau: videoData.niveau,
+                  contenu: videoData.contenu,
+                  ressources: videoData.ressources, // Structure JSON
+                  ordre: videoData.ordre,
+                })
+                .eq("id", existingData.id);
+
+              if (updateError) {
+                console.error(
+                  "Erreur lors de la mise à jour:",
+                  updateError.message
+                );
+                errorCount++;
+              } else {
+                successCount++;
+                // Nettoyer les doublons potentiels après la mise à jour
+                await supabaseClient
+                  .from("videos")
+                  .delete()
+                  .eq("user_id", userId)
+                  .eq("video_url", videoData.video_url)
+                  .neq("id", existingData.id);
+              }
             } else {
-              successCount++;
+              // Supprimer d'abord tous les doublons potentiels pour cette vidéo (au cas où)
+              const { error: deleteError } = await supabaseClient
+                .from("videos")
+                .delete()
+                .eq("user_id", userId)
+                .eq("video_url", videoData.video_url);
+
+              if (deleteError) {
+                console.warn(
+                  "Erreur lors du nettoyage des doublons:",
+                  deleteError.message
+                );
+              }
+
+              // Insérer une nouvelle vidéo
+              const { error: insertError } = await supabaseClient
+                .from("videos")
+                .insert(videoData);
+
+              if (insertError) {
+                console.error(
+                  "Erreur lors de l'insertion:",
+                  insertError.message
+                );
+                errorCount++;
+              } else {
+                successCount++;
+              }
             }
+          } catch (err) {
+            console.error("Erreur inattendue lors de la sauvegarde:", err);
+            errorCount++;
           }
         }
 
