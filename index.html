@@ -857,11 +857,11 @@
 
       tbody.innerHTML = "";
 
-      // Essayer d'abord sans le tri pour voir si c'est ça qui cause le timeout
-      console.log("Tentative 1 : Chargement sans tri...");
+      // Essayer d'abord sans la colonne ressources (qui peut être très volumineuse)
+      console.log("Tentative 1 : Chargement sans la colonne ressources...");
       let query = supabaseClient
         .from("videos")
-        .select("video_url, niveau, contenu, ressources, ordre")
+        .select("id, video_url, niveau, contenu, ordre")
         .eq("user_id", targetUserId);
 
       let { data, error } = await query;
@@ -911,6 +911,41 @@
         if (b.ordre === null) return -1;
         return a.ordre - b.ordre;
       });
+
+      // Charger les ressources séparément pour chaque vidéo (par lots de 5 pour éviter les timeouts)
+      console.log("Chargement des ressources pour chaque vidéo...");
+      for (let i = 0; i < data.length; i += 5) {
+        const batch = data.slice(i, i + 5);
+        await Promise.all(
+          batch.map(async (item) => {
+            try {
+              const { data: resData, error: resError } = await supabaseClient
+                .from("videos")
+                .select("ressources")
+                .eq("id", item.id)
+                .single();
+
+              if (!resError && resData) {
+                item.ressources = resData.ressources;
+              } else if (resError) {
+                console.warn(
+                  `Erreur lors du chargement des ressources pour la vidéo ${item.id}:`,
+                  resError.message
+                );
+              }
+            } catch (err) {
+              console.warn(
+                `Erreur lors du chargement des ressources pour la vidéo ${item.id}:`,
+                err
+              );
+            }
+          })
+        );
+        // Petite pause entre les lots pour éviter de surcharger Supabase
+        if (i + 5 < data.length) {
+          await new Promise((resolve) => setTimeout(resolve, 100));
+        }
+      }
 
       // Afficher les données
       data.forEach((item, index) => {
