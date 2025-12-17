@@ -847,12 +847,12 @@
       const userId = userIdElement.value.trim();
 
       // Charger les données publiques par défaut (userId vide) ou pour l'utilisateur spécifique
+      // Optimisation : appliquer le filtre user_id AVANT le order pour améliorer les performances
       let query = supabaseClient
         .from("videos")
-        .select("video_url, niveau, contenu, ressources, ordre")
-        .order("ordre", { ascending: true, nullsFirst: true });
+        .select("video_url, niveau, contenu, ressources, ordre");
 
-      // Si un userId est spécifié, filtrer par utilisateur
+      // Si un userId est spécifié, filtrer par utilisateur AVANT le tri
       if (userId) {
         query = query.eq("user_id", userId);
         console.log("Filtrage par userId :", userId);
@@ -862,12 +862,39 @@
         console.log("Mode public - Filtrage par userId : michawaro4480");
       }
 
+      // Appliquer le tri et la limite APRÈS le filtre pour optimiser la requête
+      query = query
+        .order("ordre", { ascending: true, nullsFirst: true })
+        .limit(1000); // Limiter à 1000 résultats pour éviter les timeouts
+
       console.log("Exécution de la requête Supabase...");
       const { data, error } = await query;
 
       if (error) {
         console.error("Erreur Supabase :", error.message);
         console.error("Détails de l'erreur :", error);
+
+        // Si c'est un timeout, suggérer des solutions
+        if (
+          error.code === "57014" ||
+          error.message.includes("timeout") ||
+          error.message.includes("canceling statement")
+        ) {
+          console.warn("⚠️ TIMEOUT détecté. La requête prend trop de temps.");
+          console.warn("Solutions possibles :");
+          console.warn(
+            "1. Vérifier dans Supabase que la colonne 'user_id' a un INDEX"
+          );
+          console.warn(
+            "2. Vérifier dans Supabase que la colonne 'ordre' a un INDEX"
+          );
+          console.warn(
+            "3. Vérifier la taille des données JSON dans 'ressources' (peut être trop volumineux)"
+          );
+          console.warn(
+            "4. Contacter le support Supabase pour augmenter le timeout ou optimiser la base"
+          );
+        }
         return;
       }
 
