@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>
-      Michawaro – Ressources pédagogiques et vidéos éducatives - SVT,
+      Michawaro – Ressources pédagogiques et vidéos éducatives YouTube - SVT,
       Méthodologie, Enseignement
     </title>
     <meta
@@ -855,15 +855,33 @@
       // Si un userId est spécifié, filtrer par utilisateur
       if (userId) {
         query = query.eq("user_id", userId);
+        console.log("Filtrage par userId :", userId);
       } else {
         // En mode public, charger les données publiques (par exemple userId = "public" ou vide)
         query = query.eq("user_id", "michawaro4480"); // Utiliser l'ID par défaut pour les données publiques
+        console.log("Mode public - Filtrage par userId : michawaro4480");
       }
 
+      console.log("Exécution de la requête Supabase...");
       const { data, error } = await query;
 
       if (error) {
-        console.warn("Pas de données Supabase ou erreur :", error.message);
+        console.error("Erreur Supabase :", error.message);
+        console.error("Détails de l'erreur :", error);
+        return;
+      }
+
+      console.log("Données reçues de Supabase :", data);
+      console.log("Nombre de vidéos :", data ? data.length : 0);
+
+      if (!data || data.length === 0) {
+        console.warn("Aucune donnée retournée par Supabase");
+        return;
+      }
+
+      const tbody = document.getElementById("tableBody");
+      if (!tbody) {
+        console.error("Élément tableBody non trouvé dans le DOM");
         return;
       }
 
