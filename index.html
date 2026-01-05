@@ -3795,6 +3795,10 @@
               // Si maxresdefault se charge, l'utiliser
               thumbnail.src = `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`;
             };
+            highQualityImg.onerror = function () {
+              // maxresdefault n'est pas disponible, c'est normal, on garde hqdefault
+              // Ne rien faire, l'erreur 404 est normale et ne doit pas être affichée
+            };
             // Tester maxresdefault en arrière-plan (ne bloque pas l'affichage)
             highQualityImg.src = `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`;
           } else {
