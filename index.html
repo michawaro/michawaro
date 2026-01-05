@@ -559,9 +559,12 @@
         opacity: 0.9;
       }
       .video-thumbnail-link img {
-        position: relative;
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
         z-index: 0;
-        align-items: center;
       }
 
       /* Style pour le bouton de suppression de ligne */
@@ -3753,9 +3756,16 @@
               link.target = "_blank";
               link.rel = "noopener noreferrer";
               link.style.cssText =
-                "position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: block; cursor: pointer;";
+                "position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: block; cursor: pointer; z-index: 1;";
 
               // Insérer le lien avant l'image et déplacer l'image dans le lien
+              // S'assurer que l'image garde son positionnement absolu
+              const originalImgStyle = thumbnail.style.cssText;
+              link.appendChild(thumbnail);
+              // Restaurer le style de l'image après l'avoir déplacée
+              thumbnail.style.cssText =
+                originalImgStyle +
+                "; position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 0;";
               // Vérifier que l'image n'est pas déjà dans un autre élément
               if (thumbnail.parentElement === container) {
                 container.insertBefore(link, thumbnail);
@@ -3771,7 +3781,12 @@
               link.href = normalizedUrl;
               // S'assurer que l'image est bien dans le lien
               if (thumbnail.parentElement !== link) {
+                const originalImgStyle = thumbnail.style.cssText;
                 link.appendChild(thumbnail);
+                // Restaurer le style de l'image après l'avoir déplacée
+                thumbnail.style.cssText =
+                  originalImgStyle +
+                  "; position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 0;";
               }
             }
 
@@ -3822,22 +3837,25 @@
               console.log(
                 `[Thumbnail ${index}] Miniature chargée avec succès: ${this.src}`
               );
-            };
 
-            // Essayer d'améliorer la qualité en arrière-plan (sans bloquer)
-            const highQualityImg = new Image();
-            highQualityImg.onload = function () {
-              // Si maxresdefault se charge, l'utiliser
-              console.log(`[Thumbnail ${index}] maxresdefault disponible`);
-              thumbnail.src = `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`;
+              // Une fois que hqdefault est chargé, essayer d'améliorer la qualité en arrière-plan
+              const highQualityImg = new Image();
+              highQualityImg.onload = function () {
+                // Si maxresdefault se charge, l'utiliser
+                console.log(
+                  `[Thumbnail ${index}] maxresdefault disponible, amélioration de la qualité`
+                );
+                thumbnail.src = `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`;
+              };
+              highQualityImg.onerror = function () {
+                // maxresdefault n'est pas disponible, c'est normal, on garde hqdefault
+                console.log(
+                  `[Thumbnail ${index}] maxresdefault non disponible pour ${videoId}, utilisation de hqdefault`
+                );
+              };
+              // Tester maxresdefault en arrière-plan seulement après que hqdefault soit chargé
+              highQualityImg.src = `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`;
             };
-            highQualityImg.onerror = function () {
-              console.log(
-                `[Thumbnail ${index}] maxresdefault non disponible pour ${videoId}`
-              );
-            };
-            // Tester maxresdefault en arrière-plan (ne bloque pas l'affichage)
-            highQualityImg.src = `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`;
           } else {
             // Supprimer le lien si l'URL n'est pas valide
             const link = container.querySelector("a.video-thumbnail-link");
