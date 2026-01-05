@@ -572,6 +572,26 @@
         display: none;
       }
 
+      /* Masquer les champs URL de "A la une !" en dehors du mode admin */
+      .video-url-input {
+        display: none;
+      }
+      .admin-mode .video-url-input {
+        display: block;
+      }
+
+      /* Désactiver les textareas de "A la une !" en dehors du mode admin */
+      .video-title-input:not(.admin-mode *) {
+        pointer-events: none;
+        background-color: #f9f9f9;
+        cursor: not-allowed;
+      }
+      .admin-mode .video-title-input {
+        pointer-events: auto;
+        background-color: white;
+        cursor: text;
+      }
+
       .admin-mode .row-checkbox {
         display: block;
       }
@@ -3158,6 +3178,22 @@
         rowCheckboxes.forEach((checkbox) => {
           checkbox.style.display = "none";
         });
+
+        // Désactiver les champs de "A la une !"
+        const videoUrlInputs = document.querySelectorAll(".video-url-input");
+        videoUrlInputs.forEach((input) => {
+          input.style.display = "none";
+          input.disabled = true;
+        });
+
+        const videoTitleInputs =
+          document.querySelectorAll(".video-title-input");
+        videoTitleInputs.forEach((textarea) => {
+          textarea.disabled = true;
+          textarea.style.pointerEvents = "none";
+          textarea.style.backgroundColor = "#f9f9f9";
+          textarea.style.cursor = "not-allowed";
+        });
       }
 
       // Fonction pour restaurer le mode admin si l'utilisateur est connecté
@@ -3414,6 +3450,22 @@
             checkbox.style.display = "block";
           }
         });
+
+        // Activer les champs de "A la une !"
+        const videoUrlInputs = document.querySelectorAll(".video-url-input");
+        videoUrlInputs.forEach((input) => {
+          input.style.display = "block";
+          input.disabled = false;
+        });
+
+        const videoTitleInputs =
+          document.querySelectorAll(".video-title-input");
+        videoTitleInputs.forEach((textarea) => {
+          textarea.disabled = false;
+          textarea.style.pointerEvents = "auto";
+          textarea.style.backgroundColor = "white";
+          textarea.style.cursor = "text";
+        });
       }
 
       // Fonction pour extraire l'ID d'une vidéo YouTube depuis l'URL
@@ -3493,6 +3545,8 @@
         loadTable();
         // Initialiser les miniatures YouTube
         initVideoThumbnails();
+        // Restaurer le mode admin si nécessaire (gère aussi les champs "A la une !")
+        restoreAdminModeIfNeeded();
       });
 
       // Fonction de chiffrement simple
