@@ -2297,9 +2297,9 @@
               </div>
               <textarea
                 class="video-title-input"
-                placeholder="Titre/Commentaire (2 lignes max)"
+                placeholder="Titre/Commentaire (4 lignes max)"
                 data-index="0"
-                rows="2"
+                rows="4"
                 style="
                   width: 100%;
                   padding: 6px;
@@ -2362,9 +2362,9 @@
               </div>
               <textarea
                 class="video-title-input"
-                placeholder="Titre/Commentaire (2 lignes max)"
+                placeholder="Titre/Commentaire (4 lignes max)"
                 data-index="1"
-                rows="2"
+                rows="4"
                 style="
                   width: 100%;
                   padding: 6px;
@@ -2427,9 +2427,9 @@
               </div>
               <textarea
                 class="video-title-input"
-                placeholder="Titre/Commentaire (2 lignes max)"
+                placeholder="Titre/Commentaire (4 lignes max)"
                 data-index="2"
-                rows="2"
+                rows="4"
                 style="
                   width: 100%;
                   padding: 6px;
@@ -2492,9 +2492,9 @@
               </div>
               <textarea
                 class="video-title-input"
-                placeholder="Titre/Commentaire (2 lignes max)"
+                placeholder="Titre/Commentaire (4 lignes max)"
                 data-index="3"
-                rows="2"
+                rows="4"
                 style="
                   width: 100%;
                   padding: 6px;
@@ -3643,10 +3643,11 @@
         url = url.trim();
 
         // Patterns pour différents formats d'URL YouTube
+        // Ordre important : tester d'abord les formats courts (youtu.be)
         const patterns = [
-          /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([^&\n?#]+)/,
+          /youtu\.be\/([^&\n?#]+)/, // Format youtu.be/VIDEO_ID (testé en premier)
+          /(?:youtube\.com\/watch\?v=|youtube\.com\/embed\/)([^&\n?#]+)/,
           /youtube\.com\/.*[?&]v=([^&\n?#]+)/,
-          /youtu\.be\/([^&\n?#]+)/, // Format youtu.be/VIDEO_ID
         ];
 
         for (let pattern of patterns) {
@@ -3694,6 +3695,9 @@
 
         if (url) {
           const videoId = extractYouTubeId(url);
+          console.log(
+            `URL: ${url}, Video ID extrait: ${videoId}, Index: ${index}`
+          );
           if (videoId) {
             // Normaliser l'URL YouTube pour le lien
             const normalizedUrl = normalizeYouTubeUrl(url);
@@ -3719,12 +3723,31 @@
             }
 
             // URL de la miniature YouTube (haute qualité)
-            thumbnail.src = `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`;
+            // Essayer d'abord maxresdefault, puis hqdefault en fallback
             thumbnail.style.display = "block";
             thumbnail.style.cursor = "pointer";
+
+            // Créer une nouvelle image pour tester si maxresdefault existe
+            const testImg = new Image();
+            testImg.onload = function () {
+              // maxresdefault existe, l'utiliser
+              thumbnail.src = `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`;
+            };
+            testImg.onerror = function () {
+              // maxresdefault n'existe pas, utiliser hqdefault directement
+              thumbnail.src = `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
+            };
+            // Tester maxresdefault
+            testImg.src = `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`;
+
+            // Fallback supplémentaire au cas où hqdefault échouerait aussi
             thumbnail.onerror = function () {
-              // Si maxresdefault n'existe pas, utiliser hqdefault
-              this.src = `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
+              // Si hqdefault échoue aussi, essayer mqdefault
+              if (this.src.includes("hqdefault")) {
+                this.src = `https://img.youtube.com/vi/${videoId}/mqdefault.jpg`;
+              } else if (this.src.includes("mqdefault")) {
+                this.src = `https://img.youtube.com/vi/${videoId}/default.jpg`;
+              }
             };
           } else {
             // Supprimer le lien si l'URL n'est pas valide
