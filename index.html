@@ -1004,6 +1004,151 @@
           console.log(`${successCount} vidéos sauvegardées avec succès`);
         }
       }
+
+      // Sauvegarder aussi les données "A la une !"
+      await saveALaUneToSupabase();
+    }
+
+    // Fonction pour sauvegarder les données "A la une !" dans Supabase
+    async function saveALaUneToSupabase() {
+      const userIdElement = document.getElementById("userId");
+      if (!userIdElement) {
+        console.warn("Élément userId non trouvé pour A la une");
+        return;
+      }
+
+      const userId = userIdElement.value.trim();
+      if (!userId) {
+        console.warn("userId vide, impossible de sauvegarder A la une");
+        return;
+      }
+
+      // Récupérer les données des 4 vidéos
+      const aLaUneData = [];
+      for (let i = 0; i < 4; i++) {
+        const urlInput = document.querySelector(
+          `.video-url-input[data-index="${i}"]`
+        );
+        const titleInput = document.querySelector(
+          `.video-title-input[data-index="${i}"]`
+        );
+
+        if (urlInput && titleInput) {
+          aLaUneData.push({
+            user_id: userId,
+            video_index: i,
+            video_url: urlInput.value.trim(),
+            video_title: titleInput.value.trim(),
+          });
+        }
+      }
+
+      // Sauvegarder chaque vidéo
+      for (const videoData of aLaUneData) {
+        try {
+          // Vérifier si la vidéo existe déjà pour cet utilisateur et cet index
+          const { data: existingData, error: checkError } = await supabaseClient
+            .from("a_la_une")
+            .select("id")
+            .eq("user_id", userId)
+            .eq("video_index", videoData.video_index)
+            .maybeSingle();
+
+          if (checkError && checkError.code !== "PGRST116") {
+            console.error(
+              "Erreur lors de la vérification A la une:",
+              checkError.message
+            );
+            continue;
+          }
+
+          if (existingData) {
+            // Mettre à jour la vidéo existante
+            const { error: updateError } = await supabaseClient
+              .from("a_la_une")
+              .update({
+                video_url: videoData.video_url,
+                video_title: videoData.video_title,
+              })
+              .eq("id", existingData.id);
+
+            if (updateError) {
+              console.error(
+                "Erreur lors de la mise à jour A la une:",
+                updateError.message
+              );
+            }
+          } else {
+            // Insérer une nouvelle vidéo
+            const { error: insertError } = await supabaseClient
+              .from("a_la_une")
+              .insert(videoData);
+
+            if (insertError) {
+              console.error(
+                "Erreur lors de l'insertion A la une:",
+                insertError.message
+              );
+            }
+          }
+        } catch (err) {
+          console.error(
+            "Erreur inattendue lors de la sauvegarde A la une:",
+            err
+          );
+        }
+      }
+    }
+
+    // Fonction pour charger les données "A la une !" depuis Supabase
+    async function loadALaUneFromSupabase() {
+      const userIdElement = document.getElementById("userId");
+      if (!userIdElement) {
+        console.warn("Élément userId non trouvé pour A la une");
+        return;
+      }
+
+      const userId = userIdElement.value.trim();
+      const targetUserId = userId || "michawaro4480";
+
+      try {
+        const { data, error } = await supabaseClient
+          .from("a_la_une")
+          .select("video_index, video_url, video_title")
+          .eq("user_id", targetUserId)
+          .order("video_index", { ascending: true });
+
+        if (error) {
+          console.error("Erreur lors du chargement A la une:", error.message);
+          return;
+        }
+
+        if (data && data.length > 0) {
+          // Charger les données dans les champs
+          data.forEach((item) => {
+            const urlInput = document.querySelector(
+              `.video-url-input[data-index="${item.video_index}"]`
+            );
+            const titleInput = document.querySelector(
+              `.video-title-input[data-index="${item.video_index}"]`
+            );
+
+            if (urlInput) {
+              urlInput.value = item.video_url || "";
+              // Mettre à jour la miniature si une URL existe
+              if (item.video_url) {
+                updateVideoThumbnail(urlInput);
+              }
+            }
+
+            if (titleInput) {
+              titleInput.value = item.video_title || "";
+            }
+          });
+        }
+      } catch (err) {
+        console.error("Erreur inattendue lors du chargement A la une:", err);
+      }
     }
 
     async function loadFromSupabase() {
@@ -1178,6 +1323,9 @@
       });
 
       console.log(`Chargement terminé : ${data.length} vidéos chargées`);
+
+      // Charger aussi les données "A la une !"
+      await loadALaUneFromSupabase();
 
       // Ne pas appeler disableEditing() ici - c'est géré par loadTable()
 
@@ -3525,17 +3673,30 @@
           // Mettre à jour lors de la saisie
           input.addEventListener("input", function () {
             updateVideoThumbnail(this);
+            // Sauvegarder automatiquement après modification
+            saveALaUneToSupabase();
           });
 
           // Mettre à jour lors du blur (quand on quitte le champ)
           input.addEventListener("blur", function () {
             updateVideoThumbnail(this);
+            // Sauvegarder automatiquement après modification
+            saveALaUneToSupabase();
           });
 
           // Vérifier si une URL existe déjà au chargement
           if (input.value) {
             updateVideoThumbnail(input);
           }
+        });
+
+        // Ajouter les gestionnaires pour les textareas de titre
+        const titleInputs = document.querySelectorAll(".video-title-input");
+        titleInputs.forEach((textarea) => {
+          textarea.addEventListener("blur", function () {
+            // Sauvegarder automatiquement après modification
+            saveALaUneToSupabase();
+          });
         });
       }
 
