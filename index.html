@@ -3724,6 +3724,9 @@
 
         if (url) {
           const videoId = extractYouTubeId(url);
+          console.log(
+            `[Thumbnail ${index}] URL: "${url}", Video ID extrait: "${videoId}"`
+          );
           if (videoId) {
             // Normaliser l'URL YouTube pour le lien
             const normalizedUrl = normalizeYouTubeUrl(url);
@@ -3776,16 +3779,62 @@
             // Le navigateur mettra en cache et on peut améliorer la qualité après si nécessaire
             thumbnail.style.display = "block";
             thumbnail.style.cursor = "pointer";
-            thumbnail.loading = "lazy"; // Chargement paresseux pour améliorer les performances
+            // Ne pas utiliser lazy loading pour les miniatures visibles immédiatement
+            thumbnail.loading = "eager";
+            // S'assurer que l'image est visible
+            thumbnail.style.opacity = "1";
+            thumbnail.style.visibility = "visible";
 
             // Charger directement hqdefault (plus rapide, existe toujours)
-            thumbnail.src = `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
+            const thumbnailUrl = `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
+            console.log(
+              `[Thumbnail ${index}] Chargement de: ${thumbnailUrl}, Video ID: ${videoId}`
+            );
+
+            // Réinitialiser les gestionnaires d'événements pour éviter les conflits
+            thumbnail.onerror = null;
+            thumbnail.onload = null;
+
+            // Charger l'image
+            thumbnail.src = thumbnailUrl;
+
+            // Gérer les erreurs de chargement avec fallbacks
+            thumbnail.onerror = function () {
+              console.error(
+                `[Thumbnail ${index}] Erreur hqdefault, essai mqdefault`
+              );
+              this.onerror = function () {
+                console.error(
+                  `[Thumbnail ${index}] Erreur mqdefault, essai default`
+                );
+                this.onerror = function () {
+                  console.error(
+                    `[Thumbnail ${index}] Toutes les miniatures ont échoué`
+                  );
+                  this.style.display = "none";
+                };
+                this.src = `https://img.youtube.com/vi/${videoId}/default.jpg`;
+              };
+              this.src = `https://img.youtube.com/vi/${videoId}/mqdefault.jpg`;
+            };
+
+            thumbnail.onload = function () {
+              console.log(
+                `[Thumbnail ${index}] Miniature chargée avec succès: ${this.src}`
+              );
+            };
 
             // Essayer d'améliorer la qualité en arrière-plan (sans bloquer)
             const highQualityImg = new Image();
             highQualityImg.onload = function () {
               // Si maxresdefault se charge, l'utiliser
+              console.log(`[Thumbnail ${index}] maxresdefault disponible`);
               thumbnail.src = `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`;
+            };
+            highQualityImg.onerror = function () {
+              console.log(
+                `[Thumbnail ${index}] maxresdefault non disponible pour ${videoId}`
+              );
             };
             // Tester maxresdefault en arrière-plan (ne bloque pas l'affichage)
             highQualityImg.src = `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`;
