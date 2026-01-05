@@ -559,11 +559,7 @@
         opacity: 0.9;
       }
       .video-thumbnail-link img {
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
+        position: relative;
         z-index: 0;
       }
 
@@ -3756,106 +3752,51 @@
               link.target = "_blank";
               link.rel = "noopener noreferrer";
               link.style.cssText =
-                "position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: block; cursor: pointer; z-index: 1;";
+                "position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: block; cursor: pointer;";
 
               // Insérer le lien avant l'image et déplacer l'image dans le lien
-              // S'assurer que l'image garde son positionnement absolu
-              const originalImgStyle = thumbnail.style.cssText;
-              link.appendChild(thumbnail);
-              // Restaurer le style de l'image après l'avoir déplacée
-              thumbnail.style.cssText =
-                originalImgStyle +
-                "; position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 0;";
-              // Vérifier que l'image n'est pas déjà dans un autre élément
               if (thumbnail.parentElement === container) {
                 container.insertBefore(link, thumbnail);
-                link.appendChild(thumbnail);
               } else {
                 // Si l'image est déjà dans un autre élément, le remplacer
                 const parent = thumbnail.parentElement;
                 parent.insertBefore(link, thumbnail);
-                link.appendChild(thumbnail);
               }
+              link.appendChild(thumbnail);
             } else {
               // Mettre à jour l'URL du lien existant
               link.href = normalizedUrl;
               // S'assurer que l'image est bien dans le lien
               if (thumbnail.parentElement !== link) {
-                const originalImgStyle = thumbnail.style.cssText;
                 link.appendChild(thumbnail);
-                // Restaurer le style de l'image après l'avoir déplacée
-                thumbnail.style.cssText =
-                  originalImgStyle +
-                  "; position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 0;";
               }
             }
 
             // Charger directement hqdefault (qui existe toujours) pour plus de rapidité
-            // Le navigateur mettra en cache et on peut améliorer la qualité après si nécessaire
             thumbnail.style.display = "block";
             thumbnail.style.cursor = "pointer";
-            // Ne pas utiliser lazy loading pour les miniatures visibles immédiatement
-            thumbnail.loading = "eager";
-            // S'assurer que l'image est visible
-            thumbnail.style.opacity = "1";
-            thumbnail.style.visibility = "visible";
 
             // Charger directement hqdefault (plus rapide, existe toujours)
-            const thumbnailUrl = `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
-            console.log(
-              `[Thumbnail ${index}] Chargement de: ${thumbnailUrl}, Video ID: ${videoId}`
-            );
-
-            // Réinitialiser les gestionnaires d'événements pour éviter les conflits
-            thumbnail.onerror = null;
-            thumbnail.onload = null;
-
-            // Charger l'image
-            thumbnail.src = thumbnailUrl;
+            thumbnail.src = `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
 
             // Gérer les erreurs de chargement avec fallbacks
             thumbnail.onerror = function () {
-              console.error(
-                `[Thumbnail ${index}] Erreur hqdefault, essai mqdefault`
-              );
+              // Si hqdefault échoue, essayer mqdefault
+              this.src = `https://img.youtube.com/vi/${videoId}/mqdefault.jpg`;
               this.onerror = function () {
-                console.error(
-                  `[Thumbnail ${index}] Erreur mqdefault, essai default`
-                );
-                this.onerror = function () {
-                  console.error(
-                    `[Thumbnail ${index}] Toutes les miniatures ont échoué`
-                  );
-                  this.style.display = "none";
-                };
+                // Si mqdefault échoue aussi, essayer default
                 this.src = `https://img.youtube.com/vi/${videoId}/default.jpg`;
               };
-              this.src = `https://img.youtube.com/vi/${videoId}/mqdefault.jpg`;
             };
 
-            thumbnail.onload = function () {
-              console.log(
-                `[Thumbnail ${index}] Miniature chargée avec succès: ${this.src}`
-              );
-
-              // Une fois que hqdefault est chargé, essayer d'améliorer la qualité en arrière-plan
-              const highQualityImg = new Image();
-              highQualityImg.onload = function () {
-                // Si maxresdefault se charge, l'utiliser
-                console.log(
-                  `[Thumbnail ${index}] maxresdefault disponible, amélioration de la qualité`
-                );
-                thumbnail.src = `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`;
-              };
-              highQualityImg.onerror = function () {
-                // maxresdefault n'est pas disponible, c'est normal, on garde hqdefault
-                console.log(
-                  `[Thumbnail ${index}] maxresdefault non disponible pour ${videoId}, utilisation de hqdefault`
-                );
-              };
-              // Tester maxresdefault en arrière-plan seulement après que hqdefault soit chargé
-              highQualityImg.src = `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`;
+            // Essayer d'améliorer la qualité en arrière-plan (sans bloquer)
+            const highQualityImg = new Image();
+            highQualityImg.onload = function () {
+              // Si maxresdefault se charge, l'utiliser
+              thumbnail.src = `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`;
             };
+            // Tester maxresdefault en arrière-plan (ne bloque pas l'affichage)
+            highQualityImg.src = `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`;
           } else {
             // Supprimer le lien si l'URL n'est pas valide
             const link = container.querySelector("a.video-thumbnail-link");
