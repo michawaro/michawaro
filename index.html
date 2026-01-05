@@ -542,6 +542,25 @@
         box-sizing: border-box;
         display: flex;
         flex-direction: column;
+      }
+      /* Style pour les liens des miniatures YouTube */
+      .video-thumbnail-link {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        display: block;
+        cursor: pointer;
+        z-index: 1;
+        transition: opacity 0.2s;
+      }
+      .video-thumbnail-link:hover {
+        opacity: 0.9;
+      }
+      .video-thumbnail-link img {
+        position: relative;
+        z-index: 0;
         align-items: center;
       }
 
@@ -3620,9 +3639,14 @@
       function extractYouTubeId(url) {
         if (!url) return null;
 
+        // Nettoyer l'URL (enlever les espaces)
+        url = url.trim();
+
+        // Patterns pour différents formats d'URL YouTube
         const patterns = [
           /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([^&\n?#]+)/,
           /youtube\.com\/.*[?&]v=([^&\n?#]+)/,
+          /youtu\.be\/([^&\n?#]+)/, // Format youtu.be/VIDEO_ID
         ];
 
         for (let pattern of patterns) {
@@ -3633,6 +3657,26 @@
         }
 
         return null;
+      }
+
+      // Fonction pour normaliser l'URL YouTube (s'assurer qu'elle est complète)
+      function normalizeYouTubeUrl(url) {
+        if (!url) return null;
+
+        url = url.trim();
+
+        // Si c'est déjà une URL complète, la retourner
+        if (url.startsWith("http://") || url.startsWith("https://")) {
+          return url;
+        }
+
+        // Si c'est juste un ID, construire l'URL
+        const videoId = extractYouTubeId(url);
+        if (videoId) {
+          return `https://www.youtube.com/watch?v=${videoId}`;
+        }
+
+        return url;
       }
 
       // Fonction pour mettre à jour la miniature YouTube
@@ -3651,17 +3695,53 @@
         if (url) {
           const videoId = extractYouTubeId(url);
           if (videoId) {
+            // Normaliser l'URL YouTube pour le lien
+            const normalizedUrl = normalizeYouTubeUrl(url);
+
+            // Créer ou mettre à jour le lien autour de la miniature
+            let link = container.querySelector("a.video-thumbnail-link");
+            if (!link) {
+              // Créer le lien s'il n'existe pas
+              link = document.createElement("a");
+              link.className = "video-thumbnail-link";
+              link.href = normalizedUrl;
+              link.target = "_blank";
+              link.rel = "noopener noreferrer";
+              link.style.cssText =
+                "position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: block; cursor: pointer;";
+
+              // Insérer le lien avant l'image et déplacer l'image dans le lien
+              container.insertBefore(link, thumbnail);
+              link.appendChild(thumbnail);
+            } else {
+              // Mettre à jour l'URL du lien existant
+              link.href = normalizedUrl;
+            }
+
             // URL de la miniature YouTube (haute qualité)
             thumbnail.src = `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`;
             thumbnail.style.display = "block";
+            thumbnail.style.cursor = "pointer";
             thumbnail.onerror = function () {
               // Si maxresdefault n'existe pas, utiliser hqdefault
               this.src = `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
             };
           } else {
+            // Supprimer le lien si l'URL n'est pas valide
+            const link = container.querySelector("a.video-thumbnail-link");
+            if (link) {
+              container.insertBefore(thumbnail, link);
+              link.remove();
+            }
             thumbnail.style.display = "none";
           }
         } else {
+          // Supprimer le lien si l'URL est vide
+          const link = container.querySelector("a.video-thumbnail-link");
+          if (link) {
+            container.insertBefore(thumbnail, link);
+            link.remove();
+          }
           thumbnail.style.display = "none";
         }
       }
