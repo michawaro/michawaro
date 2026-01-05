@@ -1143,8 +1143,17 @@
         }
 
         if (data && data.length > 0) {
-          // Charger les données dans les champs
+          // Charger les données dans les champs immédiatement (sans attendre les miniatures)
+          // Utiliser un Set pour éviter les doublons par video_index
+          const processedIndexes = new Set();
+
           data.forEach((item) => {
+            // Éviter de traiter le même index plusieurs fois (protection contre les doublons)
+            if (processedIndexes.has(item.video_index)) {
+              return;
+            }
+            processedIndexes.add(item.video_index);
+
             const urlInput = document.querySelector(
               `.video-url-input[data-index="${item.video_index}"]`
             );
@@ -1154,16 +1163,36 @@
 
             if (urlInput) {
               urlInput.value = item.video_url || "";
-              // Mettre à jour la miniature si une URL existe
-              if (item.video_url) {
-                updateVideoThumbnail(urlInput);
-              }
             }
 
             if (titleInput) {
               titleInput.value = item.video_title || "";
             }
           });
+
+          // Charger les miniatures en parallèle après avoir rempli les champs (non-bloquant)
+          // Utiliser requestIdleCallback si disponible, sinon setTimeout
+          const loadThumbnails = () => {
+            const thumbnailIndexes = new Set();
+            data.forEach((item) => {
+              // Éviter de charger plusieurs fois la même miniature
+              if (item.video_url && !thumbnailIndexes.has(item.video_index)) {
+                thumbnailIndexes.add(item.video_index);
+                const urlInput = document.querySelector(
+                  `.video-url-input[data-index="${item.video_index}"]`
+                );
+                if (urlInput) {
+                  updateVideoThumbnail(urlInput);
+                }
+              }
+            });
+          };
+
+          if (window.requestIdleCallback) {
+            requestIdleCallback(loadThumbnails, { timeout: 1000 });
+          } else {
+            setTimeout(loadThumbnails, 0);
+          }
         }
       } catch (err) {
         console.error("Erreur inattendue lors du chargement A la une:", err);
@@ -3695,15 +3724,24 @@
 
         if (url) {
           const videoId = extractYouTubeId(url);
-          console.log(
-            `URL: ${url}, Video ID extrait: ${videoId}, Index: ${index}`
-          );
           if (videoId) {
             // Normaliser l'URL YouTube pour le lien
             const normalizedUrl = normalizeYouTubeUrl(url);
 
             // Créer ou mettre à jour le lien autour de la miniature
+            // Vérifier d'abord si l'image est déjà dans un lien pour éviter les duplications
             let link = container.querySelector("a.video-thumbnail-link");
+
+            // Si l'image est déjà dans un lien parent, utiliser ce lien
+            if (
+              !link &&
+              thumbnail.parentElement &&
+              thumbnail.parentElement.tagName === "A"
+            ) {
+              link = thumbnail.parentElement;
+              link.className = "video-thumbnail-link";
+            }
+
             if (!link) {
               // Créer le lien s'il n'existe pas
               link = document.createElement("a");
@@ -3715,40 +3753,42 @@
                 "position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: block; cursor: pointer;";
 
               // Insérer le lien avant l'image et déplacer l'image dans le lien
-              container.insertBefore(link, thumbnail);
-              link.appendChild(thumbnail);
+              // Vérifier que l'image n'est pas déjà dans un autre élément
+              if (thumbnail.parentElement === container) {
+                container.insertBefore(link, thumbnail);
+                link.appendChild(thumbnail);
+              } else {
+                // Si l'image est déjà dans un autre élément, le remplacer
+                const parent = thumbnail.parentElement;
+                parent.insertBefore(link, thumbnail);
+                link.appendChild(thumbnail);
+              }
             } else {
               // Mettre à jour l'URL du lien existant
               link.href = normalizedUrl;
+              // S'assurer que l'image est bien dans le lien
+              if (thumbnail.parentElement !== link) {
+                link.appendChild(thumbnail);
+              }
             }
 
-            // URL de la miniature YouTube (haute qualité)
-            // Essayer d'abord maxresdefault, puis hqdefault en fallback
+            // Charger directement hqdefault (qui existe toujours) pour plus de rapidité
+            // Le navigateur mettra en cache et on peut améliorer la qualité après si nécessaire
             thumbnail.style.display = "block";
             thumbnail.style.cursor = "pointer";
+            thumbnail.loading = "lazy"; // Chargement paresseux pour améliorer les performances
 
-            // Créer une nouvelle image pour tester si maxresdefault existe
-            const testImg = new Image();
-            testImg.onload = function () {
-              // maxresdefault existe, l'utiliser
+            // Charger directement hqdefault (plus rapide, existe toujours)
+            thumbnail.src = `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
+
+            // Essayer d'améliorer la qualité en arrière-plan (sans bloquer)
+            const highQualityImg = new Image();
+            highQualityImg.onload = function () {
+              // Si maxresdefault se charge, l'utiliser
               thumbnail.src = `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`;
             };
-            testImg.onerror = function () {
-              // maxresdefault n'existe pas, utiliser hqdefault directement
-              thumbnail.src = `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
-            };
-            // Tester maxresdefault
-            testImg.src = `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`;
-
-            // Fallback supplémentaire au cas où hqdefault échouerait aussi
-            thumbnail.onerror = function () {
-              // Si hqdefault échoue aussi, essayer mqdefault
-              if (this.src.includes("hqdefault")) {
-                this.src = `https://img.youtube.com/vi/${videoId}/mqdefault.jpg`;
-              } else if (this.src.includes("mqdefault")) {
-                this.src = `https://img.youtube.com/vi/${videoId}/default.jpg`;
-              }
-            };
+            // Tester maxresdefault en arrière-plan (ne bloque pas l'affichage)
+            highQualityImg.src = `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`;
           } else {
             // Supprimer le lien si l'URL n'est pas valide
             const link = container.querySelector("a.video-thumbnail-link");
