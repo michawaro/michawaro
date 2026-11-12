@@ -1,1 +1,47 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="720" viewBox="0 0 1280 720"><defs><linearGradient id="bg" x2="1" y2="1"><stop stop-color="#d9f5ff"/><stop offset=".58" stop-color="#fff2e3"/><stop offset="1" stop-color="#ffb8ce"/></linearGradient><pattern id="g" width="45" height="45" patternUnits="userSpaceOnUse"><path d="M45 0H0V45" fill="none" stroke="#9ed4e7" stroke-width="2"/></pattern></defs><rect width="1280" height="720" rx="35" fill="url(#bg)"/><circle cx="1100" cy="85" r="130" fill="#ff91b6" opacity=".45"/><circle cx="190" cy="610" r="160" fill="#ff8eaa" opacity=".28"/><rect x="32" y="26" width="260" height="65" rx="32" fill="#178b38" stroke="white" stroke-width="7"/><text x="162" y="71" text-anchor="middle" font-size="36" font-family="Arial" font-weight="bold" fill="white">▣ LOGICIEL</text><text x="640" y="177" text-anchor="middle" font-size="115" font-family="Arial" font-weight="900" fill="#064365" stroke="white" stroke-width="11" paint-order="stroke">HomothétiX</text><text x="640" y="236" text-anchor="middle" font-size="38" font-family="Arial" font-weight="bold" fill="#2b6680">Construis et transforme les figures !</text><rect x="155" y="280" width="970" height="345" rx="24" fill="#fff" stroke="#356a9c" stroke-width="14"/><rect x="180" y="303" width="920" height="300" fill="url(#g)"/><g stroke="#336dca" stroke-width="7" fill="#5bc5e6" fill-opacity=".5"><path d="M300 530L360 530L330 460Z"/><path d="M480 550L600 550L540 410Z"/><path d="M740 570L920 570L830 360Z"/></g><g fill="#f4a33b" font-family="Arial" font-weight="bold" font-size="35"><text x="300" y="578">×0,5</text><text x="510" y="595">×1</text><text x="815" y="603">×1,5</text></g><circle cx="235" cy="560" r="12" fill="#de4b90"/><path d="M235 560L330 460M235 560L540 410M235 560L830 360" stroke="#cf6590" stroke-dasharray="12 9" stroke-width="4"/><rect x="860" y="32" width="380" height="68" rx="32" fill="#207b43" stroke="white" stroke-width="6"/><text x="1050" y="77" text-anchor="middle" font-size="35" font-family="Arial" font-weight="bold" fill="white">📐 Géométrie collège</text><text x="640" y="676" text-anchor="middle" font-size="29" font-family="Arial" fill="#375979">Quadrillage • Règle • Équerre • Défis</text></svg>
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="720" viewBox="0 0 1280 720"><defs>
+<linearGradient id="sky" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#bdeeff"/><stop offset=".55" stop-color="#fef4dd"/><stop offset="1" stop-color="#fbc0d7"/></linearGradient>
+<linearGradient id="wood" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#b06e3f"/><stop offset=".5" stop-color="#f4bf77"/><stop offset="1" stop-color="#9e6035"/></linearGradient>
+<linearGradient id="dark" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#06344d"/><stop offset="1" stop-color="#0d647b"/></linearGradient>
+<linearGradient id="screen" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#f7ffff"/><stop offset="1" stop-color="#dbf1ff"/></linearGradient>
+<pattern id="grid" width="34" height="34" patternUnits="userSpaceOnUse"><path d="M34 0H0V34" fill="none" stroke="#a9d9e8" stroke-width="1.8"/></pattern>
+<filter id="shadow" x="-30%" y="-30%" width="160%" height="160%"><feDropShadow dx="0" dy="8" stdDeviation="9" flood-color="#314d55" flood-opacity=".28"/></filter>
+</defs>
+<rect width="1280" height="720" rx="28" fill="url(#sky)"/>
+<path d="M0 430Q170 360 310 410T660 395T960 410T1280 390V720H0Z" fill="#88c8a3" opacity=".48"/>
+<path d="M0 485Q210 425 420 465T860 465T1280 455V720H0Z" fill="#56a88d" opacity=".35"/>
+<path d="M0 40Q180 75 280 8M1020 0Q1120 78 1280 40" fill="none" stroke="#98613d" stroke-width="24"/>
+<g fill="#ff9fc1" stroke="#fff5f8" stroke-width="3">
+<circle cx="65" cy="88" r="24"/><circle cx="100" cy="46" r="24"/><circle cx="160" cy="98" r="22"/><circle cx="260" cy="32" r="22"/>
+<circle cx="1070" cy="46" r="27"/><circle cx="1155" cy="95" r="22"/><circle cx="1230" cy="48" r="27"/><circle cx="1250" cy="156" r="20"/>
+</g>
+<g fill="#fff4a7"><circle cx="65" cy="88" r="6"/><circle cx="100" cy="46" r="6"/><circle cx="160" cy="98" r="6"/><circle cx="260" cy="32" r="6"/><circle cx="1070" cy="46" r="6"/><circle cx="1155" cy="95" r="6"/><circle cx="1230" cy="48" r="6"/></g>
+<path d="M0 625Q360 585 700 618T1280 610V720H0Z" fill="url(#wood)"/>
+<path d="M0 636H1280" stroke="#885133" stroke-width="10" opacity=".55"/>
+
+<g filter="url(#shadow)"><text x="90" y="202" font-size="103" font-weight="900" font-family="Arial,sans-serif" fill="#083e57" stroke="#fff" stroke-width="14" paint-order="stroke">Homothéti<tspan fill="#f8aa28">X</tspan></text>
+<rect x="94" y="223" width="710" height="67" rx="22" fill="#f9e6bd" stroke="#a56c3e" stroke-width="5"/>
+<text x="449" y="268" text-anchor="middle" font-size="37" font-weight="800" font-family="Arial,sans-serif" fill="#583a2d">Apprendre en manipulant !</text></g>
+<g filter="url(#shadow)"><rect x="94" y="322" width="775" height="302" rx="25" fill="#203f5a" stroke="#f7f5e8" stroke-width="11"/><rect x="113" y="342" width="736" height="260" rx="9" fill="url(#screen)"/><rect x="113" y="342" width="736" height="260" rx="9" fill="url(#grid)"/>
+<path d="M150 544H820M244 360V586" stroke="#80a6b9" stroke-width="3"/>
+<g stroke="#dc6a89" stroke-dasharray="10 7" stroke-width="4"><path d="M235 552L367 478M235 552L410 542M235 552L557 397M235 552L644 532"/></g>
+<path d="M367 478L410 542L465 459Z" fill="#74d8c4" fill-opacity=".72" stroke="#118d83" stroke-width="6"/>
+<path d="M557 397L644 532L754 367Z" fill="#78bafa" fill-opacity=".54" stroke="#2768d7" stroke-width="7"/>
+<g fill="#e8598c"><circle cx="235" cy="552" r="9"/><circle cx="367" cy="478" r="8"/><circle cx="410" cy="542" r="8"/><circle cx="465" cy="459" r="8"/></g>
+<g fill="#2c65d2"><circle cx="557" cy="397" r="9"/><circle cx="644" cy="532" r="9"/><circle cx="754" cy="367" r="9"/></g>
+<text x="209" y="578" font-size="24" font-family="Arial" font-weight="bold" fill="#9b3a69">O</text>
+<rect x="680" y="550" width="144" height="44" rx="21" fill="#ffdf87" stroke="#e5a33c" stroke-width="3"/>
+<text x="752" y="580" text-anchor="middle" font-size="27" font-family="Arial" font-weight="bold" fill="#774d22">k = 1,5</text>
+</g><g transform="translate(1010 260)" filter="url(#shadow)">
+<path d="M-100 274Q-95 183 -54 169Q0 145 54 169Q98 187 108 274L128 400H-133Z" fill="#f6e6b9" stroke="#35605a" stroke-width="8"/>
+<path d="M-42 190L0 264L42 190L70 400H-69Z" fill="#0b7779"/><path d="M-35 262L35 262M-33 303L35 303" stroke="#d5bd75" stroke-width="7"/>
+<ellipse cx="0" cy="95" rx="98" ry="116" fill="#ffddae" stroke="#835739" stroke-width="6"/>
+<path d="M-106 93Q-150-24-68-68Q-2-128 60-76Q138-57 110 85L80 38L62-3L33 32L13-8L-15 32L-46-3L-76 53Z" fill="#493025" stroke="#291d1a" stroke-width="8"/>
+<path d="M-93 23L-116 61M-79-27L-110-7M-40-62L-56-35M44-59L73-29M84-24L113 15" stroke="#77503a" stroke-width="13" stroke-linecap="round"/>
+<ellipse cx="-42" cy="105" rx="15" ry="24" fill="#382824"/><ellipse cx="42" cy="105" rx="15" ry="24" fill="#382824"/>
+<circle cx="-47" cy="97" r="6" fill="#fff"/><circle cx="36" cy="97" r="6" fill="#fff"/>
+<ellipse cx="-74" cy="148" rx="18" ry="10" fill="#fa8c91" opacity=".75"/><ellipse cx="75" cy="148" rx="18" ry="10" fill="#fa8c91" opacity=".75"/>
+<path d="M-27 163Q0 198 27 163Z" fill="#b73d48" stroke="#914341" stroke-width="4"/>
+<path d="M40-58Q74-85 89-49Q64-21 40-58Z" fill="#78bf49" stroke="#3b8a48" stroke-width="5"/><path d="M52-53Q37-85 17-75Q14-44 52-53Z" fill="#8bd651" stroke="#3b8a48" stroke-width="5"/>
+</g>
+<g transform="translate(830 615) rotate(-10)"><path d="M0 0L98 0L0 98Z" fill="#ffce83" stroke="#925a30" stroke-width="7"/><path d="M20 20L55 20L20 55Z" fill="#e8a352" stroke="#925a30" stroke-width="4"/></g>
+<g filter="url(#shadow)"><rect x="34" y="27" width="276" height="75" rx="38" fill="#188c26" stroke="#fff" stroke-width="7"/><rect x="63" y="44" width="44" height="30" rx="3" fill="none" stroke="#fff" stroke-width="4"/><path d="M85 74V84M72 84H98" stroke="#fff" stroke-width="4"/><text x="126" y="78" font-size="37" font-family="Arial,sans-serif" font-weight="900" fill="white">LOGICIEL</text></g></svg>
