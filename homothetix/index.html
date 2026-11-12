@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>HomothétiX – Le laboratoire des homothéties</title>
+<style>
+:root{--ink:#18364b;--blue:#2764d8;--pink:#fa6291;--green:#1fa484;--orange:#f4a23d;--bg:#f5f8ff}*{box-sizing:border-box}
+body{margin:0;background:linear-gradient(135deg,#edf8ff,#fff4fa);font:16px/1.45 system-ui,-apple-system,Segoe UI,sans-serif;color:var(--ink)}
+header{background:linear-gradient(110deg,#2055b7,#6e56cc 56%,#f17eac);padding:23px 4vw;color:white}
+.header{max-width:1450px;margin:auto;display:flex;justify-content:space-between;align-items:center;gap:18px;flex-wrap:wrap}
+header h1{font-size:clamp(27px,4vw,43px);margin:0;letter-spacing:-1.5px}header h1 span{color:#ffda66}
+header p{margin:4px 0 0;color:#f6f4ff}.badge{background:#fff3;color:#fff;border:1px solid #fff6;padding:8px 13px;border-radius:40px;font-weight:700}
+main{max-width:1450px;margin:auto;padding:20px 18px;display:grid;grid-template-columns:minmax(260px,300px) minmax(0,1fr);gap:18px}
+.panel,.board{background:white;border:1px solid #d8e4f2;border-radius:19px;box-shadow:0 6px 24px #304e8a12}
+.panel{padding:20px;align-self:start}.panel h2{font-size:18px;margin:0 0 12px}.panel h3{font-size:15px;margin:19px 0 8px}
+select,button,input{font:inherit}select{width:100%;border:1px solid #ccd7e8;border-radius:11px;padding:10px;background:#fff;color:var(--ink)}
+.factors{display:grid;grid-template-columns:repeat(3,1fr);gap:7px}.factors button{padding:9px 3px}
+button{background:#edf3fd;border:1px solid #cfdbec;border-radius:10px;cursor:pointer;font-weight:700;color:#214c7d;transition:.1s}
+button:hover{filter:brightness(.96)}button:focus-visible{outline:3px solid #fcb14e;outline-offset:2px}
+button.active{background:var(--blue);border-color:var(--blue);color:white}button.primary{background:linear-gradient(100deg,#1479d2,#545fd2);color:white;border:none;padding:12px}
+button.muted{background:#f9fbff}.full{width:100%;padding:10px}.tools{display:grid;grid-template-columns:repeat(3,1fr);gap:7px}.tools button{padding:11px 4px;font-size:14px}
+.tip{font-size:13px;color:#557188;background:#f0f7ff;border-radius:10px;padding:9px 11px;margin-top:12px}
+.score{display:flex;justify-content:space-between;gap:8px;font-size:14px;margin-top:14px;padding:12px;border-radius:12px;background:#effaf5;font-weight:700}
+.board{padding:14px;min-width:0}.boardhead{display:flex;gap:10px;justify-content:space-between;flex-wrap:wrap;align-items:center;margin:0 5px 10px}
+.boardhead strong{font-size:17px}.rightbar{display:flex;align-items:center;gap:9px;flex-wrap:wrap}.rightbar button{padding:7px 10px}
+.stage{border:1px solid #c8d9ec;border-radius:12px;overflow:hidden;position:relative;background:white;touch-action:none}
+canvas{display:block;width:100%;height:auto;cursor:crosshair;touch-action:none}
+.legend{display:flex;gap:15px;flex-wrap:wrap;font-size:13px;margin:10px 3px}
+.dot{display:inline-block;width:12px;height:12px;border-radius:50%;vertical-align:middle;margin-right:5px}
+.message{margin-top:11px;min-height:49px;padding:12px;border-radius:11px;background:#f0f7ff;color:#164d83;font-weight:650}
+.message.good{background:#e9f9ed;color:#14763e}.message.bad{background:#fff0ef;color:#b73d3b}
+.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}.actions button{padding:10px 14px}
+.switch{display:flex;gap:7px;align-items:center;font-size:13px}.switch input{accent-color:#3368dd}
+.calc{position:fixed;right:18px;bottom:18px;width:238px;padding:12px;border:2px solid #92ade4;background:#fff;border-radius:17px;box-shadow:0 14px 40px #2037684a;z-index:20;display:none}.calc.show{display:block}
+.calc header{margin:-12px -12px 9px;padding:8px 12px;border-radius:14px 14px 0 0;display:flex;justify-content:space-between;background:#3d64bd;align-items:center;font-size:13px}.calc button{min-height:37px}
+.calc input{width:100%;padding:8px;text-align:right;border:1px solid #b7c7e7;border-radius:8px;font-size:21px}
+.keys{display:grid;grid-template-columns:repeat(4,1fr);gap:5px;margin-top:8px}.keys button{font-size:16px}
+footer{text-align:center;font-size:12px;color:#637b94;padding:8px 15px 20px}
+@media(max-width:800px){main{grid-template-columns:1fr;padding:10px}.panel{order:2}.board{order:1}.panel h3{margin-top:12px}.header{gap:6px}.boardhead strong{font-size:14px}.actions button{flex:1}}
+</style></head><body><header><div class="header"><div><h1>📐 Homothéti<span>X</span></h1><p>Les homothéties sur papier quadrillé… mais en interactif !</p></div><div class="badge">🎯 Géométrie · Collège</div></div></header>
+<main><aside class="panel">
+<h2>1. Choisir la figure</h2><select id="kind" aria-label="Forme de départ"><option value="point">Un point</option><option value="triangle" selected>Triangle</option><option value="square">Carré</option><option value="diamond">Losange</option><option value="parallelogram">Parallélogramme</option><option value="box">Parallélépipède</option></select>
+<button class="full muted" id="newShape" style="margin-top:9px">🔀 Nouvelle figure</button>
+<h3>2. Coefficient d’homothétie</h3><div class="factors" id="factors"></div>
+<div class="tip">💡 Changer de coefficient <b>conserve la même figure de départ</b>. Seule l’image à construire change.</div>
+<h3>3. Mode de correction</h3><select id="mode"><option value="point">Point par point (immédiate)</option><option value="figure">Figure entière (à valider)</option></select>
+<h3>4. Outils d’aide</h3><div class="tools"><button id="tool-none" class="active">✏️ Tracer</button><button id="tool-ruler">📏 Règle</button><button id="tool-square">📐 Équerre</button></div>
+<button class="full muted" id="clearMeasure" style="margin-top:8px">Effacer la mesure</button><button class="full muted" id="toggleCalc" style="margin-top:8px">🧮 Afficher la calculette</button>
+<div id="toolTip" class="tip">Clique sur le quadrillage pour placer A′, puis les autres sommets dans l’ordre.</div>
+<div class="score"><span>⭐ Réussites : <span id="wins">0</span></span><span>Essais : <span id="tries">0</span></span></div>
+</aside><section class="board">
+<div class="boardhead"><strong id="instruction">Construis l’image du triangle pour k = 2.</strong><div class="rightbar"><label class="switch"><input id="help" type="checkbox"> Voir la solution</label><button id="reset">↺ Recommencer</button></div></div>
+<div class="stage"><canvas id="paper" width="1000" height="630" aria-label="Quadrillage de construction géométrique, cliquer pour placer des points"></canvas></div>
+<div class="legend"><span><i class="dot" style="background:#12a78c"></i> Figure de départ</span><span><i class="dot" style="background:#da6089"></i> Points placés</span><span><i class="dot" style="background:#2866d8"></i> Solution (sur demande)</span><span>O : centre d’homothétie</span></div>
+<div id="message" class="message" role="status">Clique sur la position de A′ sur le quadrillage.</div>
+<div class="actions"><button class="primary" id="check">✓ Vérifier la figure</button><button id="undo">↶ Retirer le dernier point</button><button id="showAnswer">👁 Voir la correction</button><button id="next">➜ Autre figure</button></div>
+</section></main>
+<div class="calc" id="calc"><header><b>🧮 Calculette</b><button id="closeCalc" aria-label="Fermer">✕</button></header><input id="display" aria-label="Expression" value="" readonly><div class="keys" id="keys"></div></div><footer>HomothétiX · Michawaro · Un outil d’apprentissage gratuit · Une unité = un carreau · Clic ou toucher</footer>
+<script>
+(function(){
+'use strict';
+var cv=document.getElementById('paper'),c=cv.getContext('2d'),W=1000,H=630,U=38,O={x:500,y:315};
+var factors=[2,1.5,.5,-1.5,-2],k=2,kind='triangle',points=[],placed=[],measure=null,tool='none',mode='point',solved=false,attempted=false,show=false,wins=0,tries=0,drag=null,stage=0;
+var $=function(id){return document.getElementById(id)};
+function pt(x,y){return {x:x,y:y}};function rnd(a){return a[Math.floor(Math.random()*a.length)]}
+var defs={point:[pt(2,2)],triangle:[pt(1,1),pt(3,1),pt(2,3)],square:[pt(1,1),pt(3,1),pt(3,3),pt(1,3)],diamond:[pt(0,2),pt(2,3),pt(4,2),pt(2,1)],parallelogram:[pt(1,1),pt(3,1),pt(4,3),pt(2,3)],box:[pt(0,0),pt(2,0),pt(2,2),pt(0,2),pt(1,1),pt(3,1),pt(3,3),pt(1,3)]};
+var labels=['A','B','C','D','E','F','G','H'];
+function makeShape(){kind=$('kind').value;var model=defs[kind].map(function(p){return pt(p.x,p.y)});var ox=rnd([-2,-1,0]),oy=rnd([-2,-1,0]); if(kind==='diamond'||kind==='parallelogram')ox=rnd([-2,-1]);points=model.map(function(p){return pt(p.x+ox,p.y+oy)});clearResponse();draw()}
+function clearResponse(){placed=[];solved=false;attempted=false;show=false;$('help').checked=false;measure=null;stage=0;message('Clique sur la position de A′ sur le quadrillage.');refresh()}
+function fmt(n){return (Math.round(n*100)/100).toString().replace('.',',')}
+function targ(){return points.map(function(p){return pt(p.x*k,p.y*k)})}
+function xy(p){return pt(O.x+p.x*U,O.y-p.y*U)}
+function world(x,y){return pt(Math.round((x-O.x)/U*2)/2,Math.round((O.y-y)/U*2)/2)}
+function nameOf(){return {point:'point',triangle:'triangle',square:'carré',diamond:'losange',parallelogram:'parallélogramme',box:'parallélépipède'}[kind]}
+function refresh(){
+ $('instruction').textContent='Construis l’image du '+nameOf()+' pour k = '+fmt(k)+'.';
+ $('check').style.display=mode==='figure'?'':'none';
+ document.querySelectorAll('[data-factor]').forEach(function(b){b.classList.toggle('active',Number(b.dataset.factor)===k)});
+ ['none','ruler','square'].forEach(function(v){$('tool-'+v).classList.toggle('active',tool===v)});
+ $('toolTip').textContent=tool==='square'?'Équerre : clique le départ puis l’arrivée. La branche horizontale compte les abscisses et la branche verticale les ordonnées. Tu peux déplacer les extrémités.':tool==='ruler'?'Règle : clique deux points pour mesurer leur distance. Tu peux déplacer ses extrémités.':'Trace les sommets images A′, B′, etc. dans l’ordre, en cliquant sur le quadrillage.';
+ $('wins').textContent=wins;$('tries').textContent=tries;draw()
+}
+function message(t,type){var el=$('message');el.textContent=t;el.className='message'+(type?' '+type:'')}
+function label(text,x,y,color){c.fillStyle=color||'#214c7b';c.font='bold 15px system-ui';c.fillText(text,x+8,y-8)}
+function circle(x,y,r,color){c.beginPath();c.arc(x,y,r,0,Math.PI*2);c.fillStyle=color;c.fill();c.strokeStyle='white';c.lineWidth=2;c.stroke()}
+function lines(arr,color,fill,edgeW){if(arr.length<2)return;c.beginPath();arr.forEach(function(p,i){var z=xy(p);if(i===0)c.moveTo(z.x,z.y);else c.lineTo(z.x,z.y)});if(arr.length>2){c.closePath();if(fill){c.fillStyle=fill;c.fill()}} c.strokeStyle=color;c.lineWidth=edgeW||3;c.stroke()}
+function boxEdges(arr,color){var ix=[[0,1],[1,2],[2,3],[3,0],[4,5],[5,6],[6,7],[7,4],[0,4],[1,5],[2,6],[3,7]];c.strokeStyle=color;c.lineWidth=3;ix.forEach(function(e){if(!arr[e[1]])return;var a=xy(arr[e[0]]),b=xy(arr[e[1]]);c.beginPath();c.moveTo(a.x,a.y);c.lineTo(b.x,b.y);c.stroke()})}
+function paintShape(arr,color,fill,suffix){if(kind==='box')boxEdges(arr,color);else lines(arr,color,fill,3);arr.forEach(function(p,i){var q=xy(p);circle(q.x,q.y,6,color);label(labels[i]+suffix,q.x,q.y,color)})}
+function drawGrid(){c.fillStyle='#fff';c.fillRect(0,0,W,H);for(var x=O.x%U;x<W;x+=U){c.strokeStyle='#dceaf8';c.lineWidth=1;c.beginPath();c.moveTo(x,0);c.lineTo(x,H);c.stroke()}for(var y=O.y%U;y<H;y+=U){c.strokeStyle='#dceaf8';c.lineWidth=1;c.beginPath();c.moveTo(0,y);c.lineTo(W,y);c.stroke()}
+ c.lineWidth=2;c.strokeStyle='#7296b9';c.beginPath();c.moveTo(0,O.y);c.lineTo(W,O.y);c.moveTo(O.x,0);c.lineTo(O.x,H);c.stroke();
+ c.fillStyle='#7296b9';c.font='12px system-ui';for(var n=-12;n<=12;n+=2){if(!n)continue;var a=xy(pt(n,0));c.fillText(String(n),a.x-6,O.y+18)}for(var z=-8;z<=8;z+=2){if(!z)continue;var b=xy(pt(0,z));c.fillText(String(z),O.x+6,b.y+4)}
+ circle(O.x,O.y,7,'#273956');label('O',O.x,O.y,'#273956')}
+function drawTarget(){var tt=targ();c.save();c.setLineDash([6,6]);paintShape(tt,'#2866d8','rgba(43,111,234,.1)','′');c.restore()}
+function drawPlaced(){if(placed.length>1&&kind!=='box'){c.beginPath();placed.forEach(function(p,i){var a=xy(p);if(i===0)c.moveTo(a.x,a.y);else c.lineTo(a.x,a.y)});if(placed.length===points.length&&points.length>2)c.closePath();c.strokeStyle='#d74f85';c.lineWidth=3;c.stroke()}if(kind==='box'&&placed.length===points.length)boxEdges(placed,'#d74f85');
+ placed.forEach(function(p,i){var a=xy(p);circle(a.x,a.y,7,'#d74f85');label(labels[i]+'′',a.x,a.y,'#c23974')})}
+function markMeasurements(){
+ if(!measure||!measure.a||!measure.b)return;
+ var a=xy(measure.a),b=xy(measure.b);c.save();c.lineWidth=6;c.lineCap='round';c.strokeStyle=tool==='square'?'#f29a3a':'#915cda';
+ c.beginPath();c.moveTo(a.x,a.y);if(tool==='square')c.lineTo(b.x,a.y);c.lineTo(b.x,b.y);c.stroke();
+ c.strokeStyle='#ffffff';c.lineWidth=2;c.setLineDash([5,7]);c.stroke();c.setLineDash([]);
+ circle(a.x,a.y,8,'#b16a37');circle(b.x,b.y,8,'#b16a37');
+ if(tool==='square'){var dx=measure.b.x-measure.a.x,dy=measure.b.y-measure.a.y;
+  c.strokeStyle='#ad5c14';c.lineWidth=1.5;
+  for(var i=0;i<=Math.round(Math.abs(dx));i++){var xx=a.x+(dx<0?-1:1)*i*U;c.beginPath();c.moveTo(xx,a.y-8);c.lineTo(xx,a.y+8);c.stroke()}
+  for(var j=0;j<=Math.round(Math.abs(dy));j++){var yy=a.y-(dy<0?-1:1)*j*U;c.beginPath();c.moveTo(b.x-8,yy);c.lineTo(b.x+8,yy);c.stroke()}
+  bubble('Δx = '+fmt(dx)+' carreau(x)',(a.x+b.x)/2-55,a.y-28);
+  bubble('Δy = '+fmt(dy)+' carreau(x)',b.x+12,(a.y+b.y)/2-16);
+  c.beginPath();c.strokeStyle='#f8ac49';c.lineWidth=2;c.moveTo(b.x-16,a.y);c.lineTo(b.x-16,a.y-16*Math.sign(b.y-a.y||1));c.lineTo(b.x,a.y-16*Math.sign(b.y-a.y||1));c.stroke();
+ }else{var d=Math.hypot(measure.b.x-measure.a.x,measure.b.y-measure.a.y);bubble('Distance : '+fmt(d)+' unité(s)',(a.x+b.x)/2-75,(a.y+b.y)/2-30)}
+ c.restore()
+}
+function bubble(s,x,y){c.save();c.font='bold 14px system-ui';var width=c.measureText(s).width+20;x=Math.max(4,Math.min(W-width-4,x));y=Math.max(4,Math.min(H-32,y));c.fillStyle='#fff4db';c.strokeStyle='#efaa4b';c.lineWidth=1;c.beginPath();c.roundRect(x,y,width,29,8);c.fill();c.stroke();c.fillStyle='#8e4a12';c.fillText(s,x+10,y+19);c.restore()}
+function draw(){drawGrid();paintShape(points,'#0fa68a','rgba(26,184,147,.12)','');if(show)drawTarget();drawPlaced();markMeasurements()}
+function mouse(e){var r=cv.getBoundingClientRect();return pt((e.clientX-r.left)*W/r.width,(e.clientY-r.top)*H/r.height)}
+function near(p,q){if(!p||!q)return false;var t=xy(p);return Math.hypot(t.x-q.x,t.y-q.y)<19}
+function pointerdown(e){e.preventDefault();cv.setPointerCapture(e.pointerId);var pixel=mouse(e),p=world(pixel.x,pixel.y);
+ if(tool!=='none'){if(measure&&near(measure.a,pixel)){drag='a';return}if(measure&&near(measure.b,pixel)){drag='b';return}if(!measure||measure.b){measure={a:p,b:null};stage=1}else{measure.b=p;stage=2}draw();return}
+ if(solved)return;
+ if(placed.length>=points.length){message('Tous les points sont placés. Vérifie ou recommence.');return}
+ if(mode==='point'){var correct=targ()[placed.length];if(Math.abs(correct.x-p.x)<.1&&Math.abs(correct.y-p.y)<.1){placed.push(p);message('✓ '+labels[placed.length-1]+'′ est bien placé !','good');if(placed.length===points.length)success()}else{message('✗ Ce point ne convient pas : compte les carreaux depuis O et réessaie.','bad')}}else{placed.push(p);message(labels[placed.length-1]+'′ placé. '+(placed.length===points.length?'Clique sur « Vérifier la figure ».':'Place maintenant '+labels[placed.length]+'′.'))}draw()}
+function pointermove(e){if(!drag||tool==='none')return;e.preventDefault();var pixel=mouse(e);measure[drag]=world(pixel.x,pixel.y);draw()}
+function success(){if(!attempted){wins++;tries++;attempted=true}solved=true;message('🎉 Bravo ! Tous les sommets sont bien placés. Tu peux changer de coefficient en conservant la figure, ou en choisir une nouvelle.','good');refresh()}
+function validate(){if(mode!=='figure'||solved)return;if(placed.length!==points.length){message('Place les '+points.length+' points avant de valider.','bad');return}if(!attempted){tries++;attempted=true}
+ var targets=targ(),errors=[];placed.forEach(function(p,i){if(Math.abs(p.x-targets[i].x)>.1||Math.abs(p.y-targets[i].y)>.1)errors.push(labels[i]+'′')});
+ if(errors.length){message('✗ À revoir : '+errors.join(', ')+'. Observe le centre O et recompte les carreaux. Tu peux retirer des points.','bad')}else{wins++;solved=true;message('🎉 Figure juste ! Homothétie de coefficient '+fmt(k)+' réussie.','good')}refresh()}
+cv.addEventListener('pointerdown',pointerdown);cv.addEventListener('pointermove',pointermove);cv.addEventListener('pointerup',function(){drag=null});cv.addEventListener('pointercancel',function(){drag=null});
+factors.forEach(function(value){var b=document.createElement('button');b.textContent='× '+fmt(value);b.dataset.factor=value;b.addEventListener('click',function(){k=value;clearResponse();refresh()});$('factors').appendChild(b)});
+$('kind').addEventListener('change',makeShape);$('newShape').addEventListener('click',makeShape);$('next').addEventListener('click',makeShape);
+$('mode').addEventListener('change',function(){mode=this.value;clearResponse();refresh()});
+['none','ruler','square'].forEach(function(v){$('tool-'+v).addEventListener('click',function(){tool=v;measure=null;stage=0;refresh()})});
+$('clearMeasure').addEventListener('click',function(){measure=null;draw()});
+$('help').addEventListener('change',function(){show=this.checked;draw()});
+$('showAnswer').addEventListener('click',function(){show=!show;$('help').checked=show;draw()});
+$('reset').addEventListener('click',function(){clearResponse();refresh()});
+$('undo').addEventListener('click',function(){placed.pop();if(solved){solved=false}message('Dernier sommet retiré.');draw()});
+$('check').addEventListener('click',validate);
+var calc=$('calc'),display=$('display'),keys=['7','8','9','÷','4','5','6','×','1','2','3','−','0',',','C','+','(',')','⌫','='];
+keys.forEach(function(ch){var b=document.createElement('button');b.textContent=ch;b.onclick=function(){if(ch==='C')display.value='';else if(ch==='⌫')display.value=display.value.slice(0,-1);else if(ch==='='){var q=display.value.replace(/,/g,'.').replace(/×/g,'*').replace(/÷/g,'/').replace(/−/g,'-');if(!/^[0-9+\-*/(). ]+$/.test(q)){display.value='Erreur';return}try{var value=Function('"use strict";return ('+q+')')();display.value=Number.isFinite(value)?fmt(value):'Erreur'}catch(e){display.value='Erreur'}}else display.value+=ch};$('keys').appendChild(b)});
+$('toggleCalc').addEventListener('click',function(){calc.classList.toggle('show');this.textContent=calc.classList.contains('show')?'🧮 Masquer la calculette':'🧮 Afficher la calculette'});
+$('closeCalc').addEventListener('click',function(){calc.classList.remove('show');$('toggleCalc').textContent='🧮 Afficher la calculette'});
+makeShape();refresh();
+})();
+</script></body></html>
