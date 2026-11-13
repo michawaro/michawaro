@@ -75,7 +75,7 @@ function refresh(){
  $('check').style.display=mode==='figure'?'':'none';
  document.querySelectorAll('[data-factor]').forEach(function(b){b.classList.toggle('active',Number(b.dataset.factor)===k)});
  ['none','ruler','square'].forEach(function(v){$('tool-'+v).classList.toggle('active',tool===v)});
- $('toolTip').textContent=tool==='square'?'Équerre : glisse un de ses coins ↗ ou ↖ pour changer sa taille, ou utilise le curseur. ↻ pour tourner.':tool==='ruler'?'Règle : tire son extrémité ↔ pour l’allonger ou la raccourcir. ↻ pour tourner. Le curseur reste disponible.':'Place les sommets images dans l’ordre. Ton instrument reste visible tant que tu ne le retires pas.';
+ $('toolTip').textContent=tool==='square'?'Équerre : fais glisser ⇄ pour la retourner gauche/droite, ⇅ pour haut/bas. ↻ pour tourner et ↗ pour agrandir.':tool==='ruler'?'Règle : fais glisser ⇄ ou ⇅ pour inverser le sens ou le côté des graduations. ↻ tourne, ↔ redimensionne.':'Place les sommets images dans l’ordre. Ton instrument reste visible tant que tu ne le retires pas.';
  $('measureActions').hidden=!measure;$('drawHeight').hidden=!measure||measure.kind!=='square';
  if(measure){var size=$('instrumentSize');size.max=measure.kind==='ruler'?'14':'12';size.value=measure.units;$('sizeValue').textContent=fmt(measure.units)+' carreaux'}
  $('wins').textContent=wins;$('tries').textContent=tries;draw()
@@ -96,19 +96,41 @@ function drawPlaced(){if(placed.length>1&&kind!=='box'){c.beginPath();placed.for
 
 /* Instruments réellement dessinés, gradués en unités de quadrillage.
    Les petits chiffres sont imprimés directement sur les bords, sans encadrés. */
-function makeInstrument(t){return {kind:t,x:t==='square'?275:320,y:H-105,ang:0,units:toolSizes[t]}}
+function makeInstrument(t){return {kind:t,x:t==='square'?275:320,y:t==='square'?H/2+55:H-105,ang:0,units:toolSizes[t],fx:1,fy:1}}
 function dimensions(m){return m.kind==='square'?{w:m.units*U,h:m.units*(5/6)*U}:{w:m.units*U,h:40}}
 function sizeHandles(m){
  var d=dimensions(m);
  return m.kind==='square'?{end:pt(d.w+12,12),top:pt(-12,-d.h-12)}:{end:pt(d.w+10,0)}
 }
-function rotationHandle(m){var d=dimensions(m);return pt(d.w*.5,m.kind==='square'?59:-55)}
+function rotationHandle(m){var d=dimensions(m);return m.kind==='square'?pt(d.w+51,-d.h/2):pt(d.w+49,-54)}
+function flipHandles(m){var d=dimensions(m);return m.kind==='square'?{h:pt(d.w/2,54),v:pt(-51,-d.h/2)}:{h:pt(d.w/2,55),v:pt(d.w/2,-55)}}
 function setInstrumentSize(n){if(!measure)return;var max=measure.kind==='ruler'?14:12;measure.units=Math.max(3,Math.min(max,Math.round(n*2)/2));toolSizes[measure.kind]=measure.units;$('instrumentSize').value=measure.units;$('sizeValue').textContent=fmt(measure.units)+' carreaux';draw()}
-function position(m,x,y){return pt(m.x+x*Math.cos(m.ang)-y*Math.sin(m.ang),m.y+x*Math.sin(m.ang)+y*Math.cos(m.ang))}
-function relative(m,p){var dx=p.x-m.x,dy=p.y-m.y;return pt(dx*Math.cos(m.ang)+dy*Math.sin(m.ang),-dx*Math.sin(m.ang)+dy*Math.cos(m.ang))}
+function position(m,x,y){
+ var xx=x*m.fx,yy=y*m.fy;
+ return pt(m.x+xx*Math.cos(m.ang)-yy*Math.sin(m.ang),m.y+xx*Math.sin(m.ang)+yy*Math.cos(m.ang))
+}
+function relative(m,p){
+ var dx=p.x-m.x,dy=p.y-m.y;
+ return pt((dx*Math.cos(m.ang)+dy*Math.sin(m.ang))*m.fx,(-dx*Math.sin(m.ang)+dy*Math.cos(m.ang))*m.fy)
+}
+function keepVisible(m){
+ var d=dimensions(m),v=m.kind==='square'?[[0,0],[d.w,0],[0,-d.h]]:
+ [[-10,-20],[d.w+10,-20],[d.w+10,20],[-10,20]];
+ var dots=v.map(function(z){return position(m,z[0],z[1])});
+ var minX=Math.min.apply(null,dots.map(function(p){return p.x})),maxX=Math.max.apply(null,dots.map(function(p){return p.x}));
+ var minY=Math.min.apply(null,dots.map(function(p){return p.y})),maxY=Math.max.apply(null,dots.map(function(p){return p.y}));
+ var pad=22,dx=0,dy=0;
+ if(maxX-minX>W-2*pad)dx=W/2-(minX+maxX)/2;
+ else if(minX<pad)dx=pad-minX;else if(maxX>W-pad)dx=W-pad-maxX;
+ if(maxY-minY>H-2*pad)dy=H/2-(minY+maxY)/2;
+ else if(minY<pad)dy=pad-minY;else if(maxY>H-pad)dy=H-pad-maxY;
+ m.x+=dx;m.y+=dy
+}
 function snap(p){return pt(O.x+Math.round((p.x-O.x)/(U/2))*U/2,O.y+Math.round((p.y-O.y)/(U/2))*U/2)}
 function toolHit(m,p){var q=relative(m,p),d=dimensions(m),w=d.w,h=d.h;
- var handles=sizeHandles(m),turn=rotationHandle(m);
+ var handles=sizeHandles(m),turn=rotationHandle(m),flips=flipHandles(m);
+ if(Math.hypot(q.x-flips.h.x,q.y-flips.h.y)<22)return 'flip-h';
+ if(Math.hypot(q.x-flips.v.x,q.y-flips.v.y)<22)return 'flip-v';
  if(Math.hypot(q.x-turn.x,q.y-turn.y)<23)return 'turn';
  // Les derniers carreaux de la règle ou les sommets de l'équerre changent la taille.
  if(Math.hypot(q.x-handles.end.x,q.y-handles.end.y)<31 ||
@@ -120,7 +142,8 @@ function toolHit(m,p){var q=relative(m,p),d=dimensions(m),w=d.w,h=d.h;
 }
 function markMeasurements(){
  if(!measure)return;var m=measure,d=dimensions(m),w=d.w,h=d.h;
- c.save();c.translate(m.x,m.y);c.rotate(m.ang);
+ c.save();c.translate(m.x,m.y);c.rotate(m.ang);c.scale(m.fx,m.fy);
+ function readable(text,x,y,font){c.save();c.translate(x,y);c.scale(m.fx,m.fy);c.font=font||'11px system-ui';c.fillText(text,0,0);c.restore()}
  c.lineJoin='round';c.lineWidth=1.6;c.strokeStyle='#427db5';c.fillStyle='rgba(224,242,255,.33)';
  if(m.kind==='ruler'){
   c.beginPath();c.roundRect(-10,-20,w+20,40,4);c.fill();c.stroke();
@@ -138,12 +161,12 @@ function markMeasurements(){
   var x=i*U/2,major=i%2===0;c.beginPath();
   c.moveTo(x,m.kind==='ruler'?-19:0);
   c.lineTo(x,m.kind==='ruler'?(major?-7:-12):(major?-10:-6));c.stroke();
-  if(major)c.fillText(String(i/2),x,m.kind==='ruler'?8:-20)
+  if(major)readable(String(i/2),x,m.kind==='ruler'?8:-20)
  }
  if(m.kind==='square'){
   for(var j=1;j<=h/(U/2);j++){
    var y=-j*U/2,big=j%2===0;c.beginPath();c.moveTo(0,y);c.lineTo(big?10:6,y);c.stroke();
-   if(big)c.fillText(String(j/2),22,y)
+   if(big)readable(String(j/2),22,y)
   }
  }
  c.fillStyle='#265a90';c.beginPath();c.arc(0,0,3,0,Math.PI*2);c.fill();
@@ -151,7 +174,7 @@ function markMeasurements(){
  function knob(p,symbol){
   c.beginPath();c.arc(p.x,p.y,11.5,0,Math.PI*2);
   c.fillStyle='rgba(255,255,255,.90)';c.fill();c.strokeStyle='#387cb4';c.lineWidth=1.3;c.stroke();
-  c.fillStyle='#225b90';c.font='bold 14px system-ui';c.fillText(symbol,p.x,p.y)
+  c.fillStyle='#225b90';readable(symbol,p.x,p.y,'bold 14px system-ui')
  }
  // Les prises pour redimensionner sont sur les extrémités de l'instrument.
  knob(handles.end,m.kind==='ruler'?'↔':'↗');
@@ -160,6 +183,20 @@ function markMeasurements(){
  c.beginPath();c.moveTo(turn.x,turn.y>0?12:-20);c.lineTo(turn.x,turn.y+(turn.y>0?-12:12));
  c.strokeStyle='#5088b8';c.lineWidth=1.2;c.stroke();
  knob(turn,'↻');
+ // Deux petites prises mauves pour retourner le matériel par glisser-déposer.
+ var flips=flipHandles(m);c.strokeStyle='#9469ae';c.lineWidth=1;
+ if(m.kind==='ruler'){
+  c.beginPath();c.moveTo(flips.h.x,20);c.lineTo(flips.h.x,flips.h.y-12);c.moveTo(flips.v.x,-20);c.lineTo(flips.v.x,flips.v.y+12);c.stroke()
+ }else{
+  c.beginPath();c.moveTo(flips.h.x,12);c.lineTo(flips.h.x,flips.h.y-12);
+  c.moveTo(-12,flips.v.y);c.lineTo(flips.v.x+12,flips.v.y);c.stroke()
+ }
+ function flipKnob(p,glyph){
+  c.beginPath();c.arc(p.x,p.y,12,0,Math.PI*2);c.fillStyle='rgba(251,244,255,.94)';c.fill();
+  c.strokeStyle='#9764b2';c.lineWidth=1.5;c.stroke();
+  c.fillStyle='#754299';readable(glyph,p.x,p.y,'bold 14px system-ui')
+ }
+ flipKnob(flips.h,'⇄');flipKnob(flips.v,'⇅');
  c.restore()
 }
 function drawGuides(){c.save();c.strokeStyle='#8658a5';c.lineWidth=1.6;c.setLineDash([6,5]);guides.forEach(function(g){c.beginPath();c.moveTo(g.a.x,g.a.y);c.lineTo(g.b.x,g.b.y);c.stroke()});c.restore()}
@@ -177,6 +214,9 @@ function pointerdown(e){
  if(tool!=='none'){
   if(!measure||measure.kind!==tool)measure=makeInstrument(tool);
   var hit=toolHit(measure,pixel);
+  if(hit==='flip-h'||hit==='flip-v'){
+   drag={type:hit,start:pixel};return
+  }
   if(hit==='turn'){
    drag={type:'turn',offset:measure.ang-Math.atan2(pixel.y-measure.y,pixel.x-measure.x)};return
   }
@@ -201,6 +241,7 @@ function pointerdown(e){
 }
 function pointermove(e){
  if(!drag||tool==='none'||!measure)return;e.preventDefault();var p=mouse(e);
+ if(drag.type==='flip-h'||drag.type==='flip-v')return;
  if(drag.type==='move'){measure.x=Math.max(12,Math.min(W-12,p.x-drag.dx));measure.y=Math.max(12,Math.min(H-12,p.y-drag.dy))}
  else if(drag.type==='resize-width'||drag.type==='resize-height'){
   var r=relative(measure,p),unitLength=drag.type==='resize-width'?
@@ -210,7 +251,19 @@ function pointermove(e){
  else{var angle=Math.atan2(p.y-measure.y,p.x-measure.x)+drag.offset,ortho=Math.round(angle/(Math.PI/2))*(Math.PI/2);
       measure.ang=Math.abs(angle-ortho)<.05?ortho:e.shiftKey?Math.round(angle/(Math.PI/12))*(Math.PI/12):angle}draw()
 }
-function pointerend(){if(drag&&drag.type==='move'&&measure){var p=snap(pt(measure.x,measure.y));measure.x=p.x;measure.y=p.y}drag=null;draw()}
+function pointerend(e){
+ if(drag&&measure){
+  if(drag.type==='move'){
+   var p=snap(pt(measure.x,measure.y));measure.x=p.x;measure.y=p.y
+  }else if(drag.type==='flip-h'||drag.type==='flip-v'){
+   // La prise retourne l'outil dans le sens choisi, au lâcher (clic ou glissement).
+   if(drag.type==='flip-h')measure.fx*=-1;else measure.fy*=-1;
+   keepVisible(measure);
+   message(drag.type==='flip-h'?'Instrument retourné horizontalement.':'Instrument retourné verticalement.','good')
+  }
+ }
+ drag=null;draw()
+}
 function success(){if(!attempted){wins++;tries++;attempted=true}solved=true;message('🎉 Bravo ! Tous les sommets sont bien placés. Tu peux changer de coefficient en conservant la figure, ou en choisir une nouvelle.','good');refresh()}
 function validate(){if(mode!=='figure'||solved)return;if(placed.length!==points.length){message('Place les '+points.length+' points avant de valider.','bad');return}if(!attempted){tries++;attempted=true}
  var targets=targ(),errors=[];placed.forEach(function(p,i){if(Math.abs(p.x-targets[i].x)>.1||Math.abs(p.y-targets[i].y)>.1)errors.push(labels[i]+'′')});
