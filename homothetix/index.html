@@ -17,7 +17,7 @@ button{background:#edf3fd;border:1px solid #cfdbec;border-radius:10px;cursor:poi
 button:hover{filter:brightness(.96)}button:focus-visible{outline:3px solid #fcb14e;outline-offset:2px}
 button.active{background:var(--blue);border-color:var(--blue);color:white}button.primary{background:linear-gradient(100deg,#1479d2,#545fd2);color:white;border:none;padding:12px}
 button.muted{background:#f9fbff}.full{width:100%;padding:10px}.tools{display:grid;grid-template-columns:repeat(3,1fr);gap:7px}.tools button{padding:11px 4px;font-size:14px}
-.tip{font-size:13px;color:#557188;background:#f0f7ff;border-radius:10px;padding:9px 11px;margin-top:12px}.measure-actions{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}.measure-actions button{flex:1 1 105px;padding:8px 5px;font-size:12px}[hidden]{display:none!important}
+.tip{font-size:13px;color:#557188;background:#f0f7ff;border-radius:10px;padding:9px 11px;margin-top:12px}.measure-actions{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}.tool-size{width:100%;padding:9px 10px;background:#f2f7ff;border:1px solid #d5e3f5;border-radius:10px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}.tool-size label{font-size:12px;font-weight:700;color:#345c80}.tool-size input{flex:1 1 110px;min-width:90px;accent-color:#2764d8;cursor:pointer}.tool-size output{min-width:65px;text-align:right;font-size:12px;color:#345c80;font-weight:700}.measure-actions button{flex:1 1 105px;padding:8px 5px;font-size:12px}[hidden]{display:none!important}
 .score{display:flex;justify-content:space-between;gap:8px;font-size:14px;margin-top:14px;padding:12px;border-radius:12px;background:#effaf5;font-weight:700}
 .board{padding:14px;min-width:0}.boardhead{display:flex;gap:10px;justify-content:space-between;flex-wrap:wrap;align-items:center;margin:0 5px 10px}
 .boardhead strong{font-size:17px}.rightbar{display:flex;align-items:center;gap:9px;flex-wrap:wrap}.rightbar button{padding:7px 10px}
@@ -43,7 +43,7 @@ footer{text-align:center;font-size:12px;color:#637b94;padding:8px 15px 20px}
 <div class="tip">💡 Changer de coefficient <b>conserve la même figure de départ</b>. Seule l’image à construire change.</div>
 <h3>3. Mode de correction</h3><select id="mode"><option value="point">Point par point (immédiate)</option><option value="figure">Figure entière (à valider)</option></select>
 <h3>4. Outils d’aide</h3><div class="tools"><button id="tool-none" class="active">✏️ Tracer</button><button id="tool-ruler">📏 Règle</button><button id="tool-square">📐 Équerre</button></div>
-<div class="measure-actions" id="measureActions" hidden><button id="drawBase">✏️ Tracer le bord</button><button id="drawHeight" hidden>✏️ Tracer la hauteur</button><button id="clearMeasure">✕ Retirer l’instrument</button></div><button class="full muted" id="clearGuides" style="margin-top:8px">Effacer les tracés</button><button class="full muted" id="toggleCalc" style="margin-top:8px">🧮 Afficher la calculette</button>
+<div class="measure-actions" id="measureActions" hidden><div class="tool-size"><label for="instrumentSize">Taille</label><input id="instrumentSize" type="range" min="3" max="14" step="0.5" value="8" aria-label="Longueur de l’instrument, en carreaux"><output id="sizeValue" for="instrumentSize">8 carreaux</output></div><button id="drawBase">✏️ Tracer le bord</button><button id="drawHeight" hidden>✏️ Tracer la hauteur</button><button id="clearMeasure">✕ Retirer l’instrument</button></div><button class="full muted" id="clearGuides" style="margin-top:8px">Effacer les tracés</button><button class="full muted" id="toggleCalc" style="margin-top:8px">🧮 Afficher la calculette</button>
 <div id="toolTip" class="tip">Clique sur le quadrillage pour placer A′, puis les autres sommets dans l’ordre.</div>
 <div class="score"><span>⭐ Réussites : <span id="wins">0</span></span><span>Essais : <span id="tries">0</span></span></div>
 </aside><section class="board">
@@ -58,7 +58,7 @@ footer{text-align:center;font-size:12px;color:#637b94;padding:8px 15px 20px}
 (function(){
 'use strict';
 var cv=document.getElementById('paper'),c=cv.getContext('2d'),W=1000,H=630,U=38,O={x:500,y:315};
-var factors=[2,1.5,.5,-1.5,-2],k=2,kind='triangle',points=[],placed=[],measure=null,tool='none',mode='point',solved=false,attempted=false,show=false,wins=0,tries=0,drag=null,guides=[];
+var factors=[2,1.5,.5,-1.5,-2],k=2,kind='triangle',points=[],placed=[],measure=null,tool='none',mode='point',solved=false,attempted=false,show=false,wins=0,tries=0,drag=null,guides=[],toolSizes={ruler:8,square:6};
 var $=function(id){return document.getElementById(id)};
 function pt(x,y){return {x:x,y:y}};function rnd(a){return a[Math.floor(Math.random()*a.length)]}
 var defs={point:[pt(2,2)],triangle:[pt(1,1),pt(3,1),pt(2,3)],square:[pt(1,1),pt(3,1),pt(3,3),pt(1,3)],diamond:[pt(0,2),pt(2,3),pt(4,2),pt(2,1)],parallelogram:[pt(1,1),pt(3,1),pt(4,3),pt(2,3)],box:[pt(0,0),pt(2,0),pt(2,2),pt(0,2),pt(1,1),pt(3,1),pt(3,3),pt(1,3)]};
@@ -75,8 +75,9 @@ function refresh(){
  $('check').style.display=mode==='figure'?'':'none';
  document.querySelectorAll('[data-factor]').forEach(function(b){b.classList.toggle('active',Number(b.dataset.factor)===k)});
  ['none','ruler','square'].forEach(function(v){$('tool-'+v).classList.toggle('active',tool===v)});
- $('toolTip').textContent=tool==='square'?'Équerre : glisse l’instrument pour le placer, utilise ↻ pour le tourner. Graduations sur les deux côtés.':tool==='ruler'?'Règle : glisse pour déplacer, ↻ pour tourner. Les chiffres indiquent le nombre de carreaux.':'Place les sommets images dans l’ordre. Ton instrument reste visible tant que tu ne le retires pas.';
+ $('toolTip').textContent=tool==='square'?'Équerre : déplace-la, tourne avec ↻ et change sa taille avec ↔ ou le curseur. Graduations en carreaux.':tool==='ruler'?'Règle : déplace-la, tourne avec ↻ et ajuste sa longueur avec ↔ ou le curseur. Graduations en carreaux.':'Place les sommets images dans l’ordre. Ton instrument reste visible tant que tu ne le retires pas.';
  $('measureActions').hidden=!measure;$('drawHeight').hidden=!measure||measure.kind!=='square';
+ if(measure){var size=$('instrumentSize');size.max=measure.kind==='ruler'?'14':'12';size.value=measure.units;$('sizeValue').textContent=fmt(measure.units)+' carreaux'}
  $('wins').textContent=wins;$('tries').textContent=tries;draw()
 }
 function message(t,type){var el=$('message');el.textContent=t;el.className='message'+(type?' '+type:'')}
@@ -95,13 +96,16 @@ function drawPlaced(){if(placed.length>1&&kind!=='box'){c.beginPath();placed.for
 
 /* Instruments réellement dessinés, gradués en unités de quadrillage.
    Les petits chiffres sont imprimés directement sur les bords, sans encadrés. */
-function makeInstrument(t){return {kind:t,x:t==='square'?275:320,y:H-105,ang:0}}
-function dimensions(m){return m.kind==='square'?{w:6*U,h:5*U}:{w:8*U,h:40}}
+function makeInstrument(t){return {kind:t,x:t==='square'?275:320,y:H-105,ang:0,units:toolSizes[t]}}
+function dimensions(m){return m.kind==='square'?{w:m.units*U,h:m.units*(5/6)*U}:{w:m.units*U,h:40}}
+function sizeHandle(m){var d=dimensions(m);return pt(d.w+21,m.kind==='square'?-66:50)}
+function setInstrumentSize(n){if(!measure)return;var max=measure.kind==='ruler'?14:12;measure.units=Math.max(3,Math.min(max,Math.round(n*2)/2));toolSizes[measure.kind]=measure.units;$('instrumentSize').value=measure.units;$('sizeValue').textContent=fmt(measure.units)+' carreaux';draw()}
 function position(m,x,y){return pt(m.x+x*Math.cos(m.ang)-y*Math.sin(m.ang),m.y+x*Math.sin(m.ang)+y*Math.cos(m.ang))}
 function relative(m,p){var dx=p.x-m.x,dy=p.y-m.y;return pt(dx*Math.cos(m.ang)+dy*Math.sin(m.ang),-dx*Math.sin(m.ang)+dy*Math.cos(m.ang))}
 function snap(p){return pt(O.x+Math.round((p.x-O.x)/(U/2))*U/2,O.y+Math.round((p.y-O.y)/(U/2))*U/2)}
 function toolHit(m,p){var q=relative(m,p),d=dimensions(m),w=d.w,h=d.h;
- if(Math.hypot(q.x-w-27,q.y)<26)return 'turn';
+ var grip=sizeHandle(m);if(Math.hypot(q.x-grip.x,q.y-grip.y)<22)return 'resize';
+ if(Math.hypot(q.x-w-27,q.y)<23)return 'turn';
  if(m.kind==='ruler')return (q.x>-14&&q.x<w+14&&Math.abs(q.y)<26)?'move':null;
  return (q.x>-15&&q.x<w+13&&q.y>-h-15&&q.y<17&&(q.x/w+(-q.y)/h<1.26||q.x<26||q.y>-27))?'move':null
 }
@@ -137,6 +141,11 @@ function markMeasurements(){
  c.beginPath();c.moveTo(w+10,0);c.lineTo(w+17,0);c.stroke();
  c.beginPath();c.arc(w+27,0,12,0,Math.PI*2);c.fillStyle='rgba(255,255,255,.94)';c.fill();c.stroke();
  c.fillStyle='#275f96';c.font='15px system-ui';c.fillText('↻',w+27,0);
+ // Poignée indépendante : glisser ↔ change la longueur sans déformer l’échelle.
+ var grip=sizeHandle(m);c.strokeStyle='#4d8abe';c.lineWidth=1.2;
+ c.beginPath();c.moveTo(w+7,grip.y);c.lineTo(grip.x-12,grip.y);c.stroke();
+ c.beginPath();c.arc(grip.x,grip.y,12,0,Math.PI*2);c.fillStyle='rgba(255,255,255,.94)';c.fill();c.stroke();
+ c.fillStyle='#275f96';c.font='bold 13px system-ui';c.fillText('↔',grip.x,grip.y);
  c.restore()
 }
 function drawGuides(){c.save();c.strokeStyle='#8658a5';c.lineWidth=1.6;c.setLineDash([6,5]);guides.forEach(function(g){c.beginPath();c.moveTo(g.a.x,g.a.y);c.lineTo(g.b.x,g.b.y);c.stroke()});c.restore()}
@@ -155,6 +164,7 @@ function pointerdown(e){
   if(!measure||measure.kind!==tool)measure=makeInstrument(tool);
   var hit=toolHit(measure,pixel);
   if(hit==='turn'){drag={type:'turn'};return}
+  if(hit==='resize'){drag={type:'resize'};return}
   if(hit==='move'){drag={type:'move',dx:pixel.x-measure.x,dy:pixel.y-measure.y};return}
   var at=snap(pixel);measure.x=at.x;measure.y=at.y;drag={type:'move',dx:0,dy:0};draw();return
  }
@@ -173,6 +183,7 @@ function pointerdown(e){
 function pointermove(e){
  if(!drag||tool==='none'||!measure)return;e.preventDefault();var p=mouse(e);
  if(drag.type==='move'){measure.x=Math.max(12,Math.min(W-12,p.x-drag.dx));measure.y=Math.max(12,Math.min(H-12,p.y-drag.dy))}
+ else if(drag.type==='resize'){var r=relative(measure,p);setInstrumentSize(r.x/U);return}
  else{var angle=Math.atan2(p.y-measure.y,p.x-measure.x),ortho=Math.round(angle/(Math.PI/2))*(Math.PI/2);
       measure.ang=Math.abs(angle-ortho)<.05?ortho:e.shiftKey?Math.round(angle/(Math.PI/12))*(Math.PI/12):angle}draw()
 }
@@ -190,6 +201,7 @@ $('clearMeasure').addEventListener('click',function(){measure=null;tool='none';r
 $('clearGuides').addEventListener('click',function(){guides=[];draw()});
 $('drawBase').addEventListener('click',function(){traceEdge(false)});
 $('drawHeight').addEventListener('click',function(){traceEdge(true)});
+$('instrumentSize').addEventListener('input',function(){setInstrumentSize(Number(this.value))});
 $('help').addEventListener('change',function(){show=this.checked;draw()});
 $('showAnswer').addEventListener('click',function(){show=!show;$('help').checked=show;draw()});
 $('reset').addEventListener('click',function(){clearResponse();refresh()});
