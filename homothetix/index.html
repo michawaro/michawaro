@@ -17,7 +17,7 @@ button{background:#edf3fd;border:1px solid #cfdbec;border-radius:10px;cursor:poi
 button:hover{filter:brightness(.96)}button:focus-visible{outline:3px solid #fcb14e;outline-offset:2px}
 button.active{background:var(--blue);border-color:var(--blue);color:white}button.primary{background:linear-gradient(100deg,#1479d2,#545fd2);color:white;border:none;padding:12px}
 button.muted{background:#f9fbff}.full{width:100%;padding:10px}.tools{display:grid;grid-template-columns:repeat(3,1fr);gap:7px}.tools button{padding:11px 4px;font-size:14px}
-.tip{font-size:13px;color:#557188;background:#f0f7ff;border-radius:10px;padding:9px 11px;margin-top:12px}
+.tip{font-size:13px;color:#557188;background:#f0f7ff;border-radius:10px;padding:9px 11px;margin-top:12px}.measure-actions{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}.measure-actions button{flex:1 1 105px;padding:8px 5px;font-size:12px}[hidden]{display:none!important}
 .score{display:flex;justify-content:space-between;gap:8px;font-size:14px;margin-top:14px;padding:12px;border-radius:12px;background:#effaf5;font-weight:700}
 .board{padding:14px;min-width:0}.boardhead{display:flex;gap:10px;justify-content:space-between;flex-wrap:wrap;align-items:center;margin:0 5px 10px}
 .boardhead strong{font-size:17px}.rightbar{display:flex;align-items:center;gap:9px;flex-wrap:wrap}.rightbar button{padding:7px 10px}
@@ -43,7 +43,7 @@ footer{text-align:center;font-size:12px;color:#637b94;padding:8px 15px 20px}
 <div class="tip">💡 Changer de coefficient <b>conserve la même figure de départ</b>. Seule l’image à construire change.</div>
 <h3>3. Mode de correction</h3><select id="mode"><option value="point">Point par point (immédiate)</option><option value="figure">Figure entière (à valider)</option></select>
 <h3>4. Outils d’aide</h3><div class="tools"><button id="tool-none" class="active">✏️ Tracer</button><button id="tool-ruler">📏 Règle</button><button id="tool-square">📐 Équerre</button></div>
-<button class="full muted" id="clearMeasure" style="margin-top:8px">Effacer la mesure</button><button class="full muted" id="toggleCalc" style="margin-top:8px">🧮 Afficher la calculette</button>
+<div class="measure-actions" id="measureActions" hidden><button id="drawBase">✏️ Tracer le bord</button><button id="drawHeight" hidden>✏️ Tracer la hauteur</button><button id="clearMeasure">✕ Retirer l’instrument</button></div><button class="full muted" id="clearGuides" style="margin-top:8px">Effacer les tracés</button><button class="full muted" id="toggleCalc" style="margin-top:8px">🧮 Afficher la calculette</button>
 <div id="toolTip" class="tip">Clique sur le quadrillage pour placer A′, puis les autres sommets dans l’ordre.</div>
 <div class="score"><span>⭐ Réussites : <span id="wins">0</span></span><span>Essais : <span id="tries">0</span></span></div>
 </aside><section class="board">
@@ -58,13 +58,13 @@ footer{text-align:center;font-size:12px;color:#637b94;padding:8px 15px 20px}
 (function(){
 'use strict';
 var cv=document.getElementById('paper'),c=cv.getContext('2d'),W=1000,H=630,U=38,O={x:500,y:315};
-var factors=[2,1.5,.5,-1.5,-2],k=2,kind='triangle',points=[],placed=[],measure=null,tool='none',mode='point',solved=false,attempted=false,show=false,wins=0,tries=0,drag=null,stage=0;
+var factors=[2,1.5,.5,-1.5,-2],k=2,kind='triangle',points=[],placed=[],measure=null,tool='none',mode='point',solved=false,attempted=false,show=false,wins=0,tries=0,drag=null,guides=[];
 var $=function(id){return document.getElementById(id)};
 function pt(x,y){return {x:x,y:y}};function rnd(a){return a[Math.floor(Math.random()*a.length)]}
 var defs={point:[pt(2,2)],triangle:[pt(1,1),pt(3,1),pt(2,3)],square:[pt(1,1),pt(3,1),pt(3,3),pt(1,3)],diamond:[pt(0,2),pt(2,3),pt(4,2),pt(2,1)],parallelogram:[pt(1,1),pt(3,1),pt(4,3),pt(2,3)],box:[pt(0,0),pt(2,0),pt(2,2),pt(0,2),pt(1,1),pt(3,1),pt(3,3),pt(1,3)]};
 var labels=['A','B','C','D','E','F','G','H'];
 function makeShape(){kind=$('kind').value;var model=defs[kind].map(function(p){return pt(p.x,p.y)});var ox=rnd([-2,-1,0]),oy=rnd([-2,-1,0]); if(kind==='diamond'||kind==='parallelogram')ox=rnd([-2,-1]);points=model.map(function(p){return pt(p.x+ox,p.y+oy)});clearResponse();draw()}
-function clearResponse(){placed=[];solved=false;attempted=false;show=false;$('help').checked=false;measure=null;stage=0;message('Clique sur la position de A′ sur le quadrillage.');refresh()}
+function clearResponse(){placed=[];solved=false;attempted=false;show=false;$('help').checked=false;guides=[];drag=null;message('Clique sur la position de A′ sur le quadrillage.');refresh()}
 function fmt(n){return (Math.round(n*100)/100).toString().replace('.',',')}
 function targ(){return points.map(function(p){return pt(p.x*k,p.y*k)})}
 function xy(p){return pt(O.x+p.x*U,O.y-p.y*U)}
@@ -75,7 +75,8 @@ function refresh(){
  $('check').style.display=mode==='figure'?'':'none';
  document.querySelectorAll('[data-factor]').forEach(function(b){b.classList.toggle('active',Number(b.dataset.factor)===k)});
  ['none','ruler','square'].forEach(function(v){$('tool-'+v).classList.toggle('active',tool===v)});
- $('toolTip').textContent=tool==='square'?'Équerre : clique le départ puis l’arrivée. La branche horizontale compte les abscisses et la branche verticale les ordonnées. Tu peux déplacer les extrémités.':tool==='ruler'?'Règle : clique deux points pour mesurer leur distance. Tu peux déplacer ses extrémités.':'Trace les sommets images A′, B′, etc. dans l’ordre, en cliquant sur le quadrillage.';
+ $('toolTip').textContent=tool==='square'?'Équerre : glisse l’instrument pour le placer, utilise ↻ pour le tourner. Graduations sur les deux côtés.':tool==='ruler'?'Règle : glisse pour déplacer, ↻ pour tourner. Les chiffres indiquent le nombre de carreaux.':'Place les sommets images dans l’ordre. Ton instrument reste visible tant que tu ne le retires pas.';
+ $('measureActions').hidden=!measure;$('drawHeight').hidden=!measure||measure.kind!=='square';
  $('wins').textContent=wins;$('tries').textContent=tries;draw()
 }
 function message(t,type){var el=$('message');el.textContent=t;el.className='message'+(type?' '+type:'')}
@@ -91,42 +92,104 @@ function drawGrid(){c.fillStyle='#fff';c.fillRect(0,0,W,H);for(var x=O.x%U;x<W;x
 function drawTarget(){var tt=targ();c.save();c.setLineDash([6,6]);paintShape(tt,'#2866d8','rgba(43,111,234,.1)','′');c.restore()}
 function drawPlaced(){if(placed.length>1&&kind!=='box'){c.beginPath();placed.forEach(function(p,i){var a=xy(p);if(i===0)c.moveTo(a.x,a.y);else c.lineTo(a.x,a.y)});if(placed.length===points.length&&points.length>2)c.closePath();c.strokeStyle='#d74f85';c.lineWidth=3;c.stroke()}if(kind==='box'&&placed.length===points.length)boxEdges(placed,'#d74f85');
  placed.forEach(function(p,i){var a=xy(p);circle(a.x,a.y,7,'#d74f85');label(labels[i]+'′',a.x,a.y,'#c23974')})}
+
+/* Instruments réellement dessinés, gradués en unités de quadrillage.
+   Les petits chiffres sont imprimés directement sur les bords, sans encadrés. */
+function makeInstrument(t){return {kind:t,x:t==='square'?275:320,y:H-105,ang:0}}
+function dimensions(m){return m.kind==='square'?{w:6*U,h:5*U}:{w:8*U,h:40}}
+function position(m,x,y){return pt(m.x+x*Math.cos(m.ang)-y*Math.sin(m.ang),m.y+x*Math.sin(m.ang)+y*Math.cos(m.ang))}
+function relative(m,p){var dx=p.x-m.x,dy=p.y-m.y;return pt(dx*Math.cos(m.ang)+dy*Math.sin(m.ang),-dx*Math.sin(m.ang)+dy*Math.cos(m.ang))}
+function snap(p){return pt(O.x+Math.round((p.x-O.x)/(U/2))*U/2,O.y+Math.round((p.y-O.y)/(U/2))*U/2)}
+function toolHit(m,p){var q=relative(m,p),d=dimensions(m),w=d.w,h=d.h;
+ if(Math.hypot(q.x-w-27,q.y)<26)return 'turn';
+ if(m.kind==='ruler')return (q.x>-14&&q.x<w+14&&Math.abs(q.y)<26)?'move':null;
+ return (q.x>-15&&q.x<w+13&&q.y>-h-15&&q.y<17&&(q.x/w+(-q.y)/h<1.26||q.x<26||q.y>-27))?'move':null
+}
 function markMeasurements(){
- if(!measure||!measure.a||!measure.b)return;
- var a=xy(measure.a),b=xy(measure.b);c.save();c.lineWidth=6;c.lineCap='round';c.strokeStyle=tool==='square'?'#f29a3a':'#915cda';
- c.beginPath();c.moveTo(a.x,a.y);if(tool==='square')c.lineTo(b.x,a.y);c.lineTo(b.x,b.y);c.stroke();
- c.strokeStyle='#ffffff';c.lineWidth=2;c.setLineDash([5,7]);c.stroke();c.setLineDash([]);
- circle(a.x,a.y,8,'#b16a37');circle(b.x,b.y,8,'#b16a37');
- if(tool==='square'){var dx=measure.b.x-measure.a.x,dy=measure.b.y-measure.a.y;
-  c.strokeStyle='#ad5c14';c.lineWidth=1.5;
-  for(var i=0;i<=Math.round(Math.abs(dx));i++){var xx=a.x+(dx<0?-1:1)*i*U;c.beginPath();c.moveTo(xx,a.y-8);c.lineTo(xx,a.y+8);c.stroke()}
-  for(var j=0;j<=Math.round(Math.abs(dy));j++){var yy=a.y-(dy<0?-1:1)*j*U;c.beginPath();c.moveTo(b.x-8,yy);c.lineTo(b.x+8,yy);c.stroke()}
-  bubble('Δx = '+fmt(dx)+' carreau(x)',(a.x+b.x)/2-55,a.y-28);
-  bubble('Δy = '+fmt(dy)+' carreau(x)',b.x+12,(a.y+b.y)/2-16);
-  c.beginPath();c.strokeStyle='#f8ac49';c.lineWidth=2;c.moveTo(b.x-16,a.y);c.lineTo(b.x-16,a.y-16*Math.sign(b.y-a.y||1));c.lineTo(b.x,a.y-16*Math.sign(b.y-a.y||1));c.stroke();
- }else{var d=Math.hypot(measure.b.x-measure.a.x,measure.b.y-measure.a.y);bubble('Distance : '+fmt(d)+' unité(s)',(a.x+b.x)/2-75,(a.y+b.y)/2-30)}
+ if(!measure)return;var m=measure,d=dimensions(m),w=d.w,h=d.h;
+ c.save();c.translate(m.x,m.y);c.rotate(m.ang);
+ c.lineJoin='round';c.lineWidth=1.6;c.strokeStyle='#427db5';c.fillStyle='rgba(224,242,255,.33)';
+ if(m.kind==='ruler'){
+  c.beginPath();c.roundRect(-10,-20,w+20,40,4);c.fill();c.stroke();
+ }else{
+  // Triangle rectangle évidé : le quadrillage reste visible au centre.
+  c.beginPath();c.moveTo(-12,12);c.lineTo(w+12,12);c.lineTo(-12,-h-12);c.closePath();
+  c.moveTo(23,-22);c.lineTo(w-74,-22);c.lineTo(23,-h+65);c.closePath();c.fill('evenodd');
+  c.beginPath();c.moveTo(-12,12);c.lineTo(w+12,12);c.lineTo(-12,-h-12);c.closePath();c.stroke();
+  c.beginPath();c.moveTo(23,-22);c.lineTo(w-74,-22);c.lineTo(23,-h+65);c.closePath();
+  c.lineWidth=1;c.strokeStyle='rgba(65,125,179,.55)';c.stroke();
+  c.beginPath();c.moveTo(7,-5);c.lineTo(7,-13);c.lineTo(15,-13);c.stroke();
+ }
+ c.fillStyle='#1e5685';c.strokeStyle='#376b9a';c.font='11px system-ui';c.textAlign='center';c.textBaseline='middle';
+ for(var i=0;i<=w/(U/2);i++){
+  var x=i*U/2,major=i%2===0;c.beginPath();
+  c.moveTo(x,m.kind==='ruler'?-19:0);
+  c.lineTo(x,m.kind==='ruler'?(major?-7:-12):(major?-10:-6));c.stroke();
+  if(major)c.fillText(String(i/2),x,m.kind==='ruler'?8:-20)
+ }
+ if(m.kind==='square'){
+  for(var j=1;j<=h/(U/2);j++){
+   var y=-j*U/2,big=j%2===0;c.beginPath();c.moveTo(0,y);c.lineTo(big?10:6,y);c.stroke();
+   if(big)c.fillText(String(j/2),22,y)
+  }
+ }
+ c.fillStyle='#265a90';c.beginPath();c.arc(0,0,3,0,Math.PI*2);c.fill();
+ c.beginPath();c.moveTo(w+10,0);c.lineTo(w+17,0);c.stroke();
+ c.beginPath();c.arc(w+27,0,12,0,Math.PI*2);c.fillStyle='rgba(255,255,255,.94)';c.fill();c.stroke();
+ c.fillStyle='#275f96';c.font='15px system-ui';c.fillText('↻',w+27,0);
  c.restore()
 }
-function bubble(s,x,y){c.save();c.font='bold 14px system-ui';var width=c.measureText(s).width+20;x=Math.max(4,Math.min(W-width-4,x));y=Math.max(4,Math.min(H-32,y));c.fillStyle='#fff4db';c.strokeStyle='#efaa4b';c.lineWidth=1;c.beginPath();c.roundRect(x,y,width,29,8);c.fill();c.stroke();c.fillStyle='#8e4a12';c.fillText(s,x+10,y+19);c.restore()}
-function draw(){drawGrid();paintShape(points,'#0fa68a','rgba(26,184,147,.12)','');if(show)drawTarget();drawPlaced();markMeasurements()}
+function drawGuides(){c.save();c.strokeStyle='#8658a5';c.lineWidth=1.6;c.setLineDash([6,5]);guides.forEach(function(g){c.beginPath();c.moveTo(g.a.x,g.a.y);c.lineTo(g.b.x,g.b.y);c.stroke()});c.restore()}
+function traceEdge(vertical){
+ if(!measure)return;var m=measure,d=dimensions(m);
+ guides.push({a:position(m,0,0),b:vertical?position(m,0,-d.h):position(m,d.w,0)});
+ draw();message('Trait de construction ajouté. Passe en mode « Tracer » pour placer les sommets.','good')
+}
+function draw(){drawGrid();drawGuides();paintShape(points,'#0fa68a','rgba(26,184,147,.12)','');if(show)drawTarget();drawPlaced();markMeasurements()}
 function mouse(e){var r=cv.getBoundingClientRect();return pt((e.clientX-r.left)*W/r.width,(e.clientY-r.top)*H/r.height)}
-function near(p,q){if(!p||!q)return false;var t=xy(p);return Math.hypot(t.x-q.x,t.y-q.y)<19}
-function pointerdown(e){e.preventDefault();cv.setPointerCapture(e.pointerId);var pixel=mouse(e),p=world(pixel.x,pixel.y);
- if(tool!=='none'){if(measure&&near(measure.a,pixel)){drag='a';return}if(measure&&near(measure.b,pixel)){drag='b';return}if(!measure||measure.b){measure={a:p,b:null};stage=1}else{measure.b=p;stage=2}draw();return}
+
+function pointerdown(e){
+ e.preventDefault();cv.setPointerCapture(e.pointerId);
+ var pixel=mouse(e),p=world(pixel.x,pixel.y);
+ if(tool!=='none'){
+  if(!measure||measure.kind!==tool)measure=makeInstrument(tool);
+  var hit=toolHit(measure,pixel);
+  if(hit==='turn'){drag={type:'turn'};return}
+  if(hit==='move'){drag={type:'move',dx:pixel.x-measure.x,dy:pixel.y-measure.y};return}
+  var at=snap(pixel);measure.x=at.x;measure.y=at.y;drag={type:'move',dx:0,dy:0};draw();return
+ }
  if(solved)return;
  if(placed.length>=points.length){message('Tous les points sont placés. Vérifie ou recommence.');return}
- if(mode==='point'){var correct=targ()[placed.length];if(Math.abs(correct.x-p.x)<.1&&Math.abs(correct.y-p.y)<.1){placed.push(p);message('✓ '+labels[placed.length-1]+'′ est bien placé !','good');if(placed.length===points.length)success()}else{message('✗ Ce point ne convient pas : compte les carreaux depuis O et réessaie.','bad')}}else{placed.push(p);message(labels[placed.length-1]+'′ placé. '+(placed.length===points.length?'Clique sur « Vérifier la figure ».':'Place maintenant '+labels[placed.length]+'′.'))}draw()}
-function pointermove(e){if(!drag||tool==='none')return;e.preventDefault();var pixel=mouse(e);measure[drag]=world(pixel.x,pixel.y);draw()}
+ if(mode==='point'){
+  var correct=targ()[placed.length];
+  if(Math.abs(correct.x-p.x)<.1&&Math.abs(correct.y-p.y)<.1){
+   placed.push(p);message('✓ '+labels[placed.length-1]+'′ est bien placé !','good');
+   if(placed.length===points.length)success()
+  }else message('✗ Ce point ne convient pas : compte les carreaux depuis O et réessaie.','bad')
+ }else{
+  placed.push(p);message(labels[placed.length-1]+'′ placé. '+(placed.length===points.length?'Clique sur « Vérifier la figure ».':'Place maintenant '+labels[placed.length]+'′.'))
+ }draw()
+}
+function pointermove(e){
+ if(!drag||tool==='none'||!measure)return;e.preventDefault();var p=mouse(e);
+ if(drag.type==='move'){measure.x=Math.max(12,Math.min(W-12,p.x-drag.dx));measure.y=Math.max(12,Math.min(H-12,p.y-drag.dy))}
+ else{var angle=Math.atan2(p.y-measure.y,p.x-measure.x),ortho=Math.round(angle/(Math.PI/2))*(Math.PI/2);
+      measure.ang=Math.abs(angle-ortho)<.05?ortho:e.shiftKey?Math.round(angle/(Math.PI/12))*(Math.PI/12):angle}draw()
+}
+function pointerend(){if(drag&&drag.type==='move'&&measure){var p=snap(pt(measure.x,measure.y));measure.x=p.x;measure.y=p.y}drag=null;draw()}
 function success(){if(!attempted){wins++;tries++;attempted=true}solved=true;message('🎉 Bravo ! Tous les sommets sont bien placés. Tu peux changer de coefficient en conservant la figure, ou en choisir une nouvelle.','good');refresh()}
 function validate(){if(mode!=='figure'||solved)return;if(placed.length!==points.length){message('Place les '+points.length+' points avant de valider.','bad');return}if(!attempted){tries++;attempted=true}
  var targets=targ(),errors=[];placed.forEach(function(p,i){if(Math.abs(p.x-targets[i].x)>.1||Math.abs(p.y-targets[i].y)>.1)errors.push(labels[i]+'′')});
  if(errors.length){message('✗ À revoir : '+errors.join(', ')+'. Observe le centre O et recompte les carreaux. Tu peux retirer des points.','bad')}else{wins++;solved=true;message('🎉 Figure juste ! Homothétie de coefficient '+fmt(k)+' réussie.','good')}refresh()}
-cv.addEventListener('pointerdown',pointerdown);cv.addEventListener('pointermove',pointermove);cv.addEventListener('pointerup',function(){drag=null});cv.addEventListener('pointercancel',function(){drag=null});
+cv.addEventListener('pointerdown',pointerdown);cv.addEventListener('pointermove',pointermove);cv.addEventListener('pointerup',pointerend);cv.addEventListener('pointercancel',pointerend);
 factors.forEach(function(value){var b=document.createElement('button');b.textContent='× '+fmt(value);b.dataset.factor=value;b.addEventListener('click',function(){k=value;clearResponse();refresh()});$('factors').appendChild(b)});
 $('kind').addEventListener('change',makeShape);$('newShape').addEventListener('click',makeShape);$('next').addEventListener('click',makeShape);
 $('mode').addEventListener('change',function(){mode=this.value;clearResponse();refresh()});
-['none','ruler','square'].forEach(function(v){$('tool-'+v).addEventListener('click',function(){tool=v;measure=null;stage=0;refresh()})});
-$('clearMeasure').addEventListener('click',function(){measure=null;draw()});
+['none','ruler','square'].forEach(function(v){$('tool-'+v).addEventListener('click',function(){tool=v;if(v!=='none'&&(!measure||measure.kind!==v))measure=makeInstrument(v);refresh()})});
+$('clearMeasure').addEventListener('click',function(){measure=null;tool='none';refresh()});
+$('clearGuides').addEventListener('click',function(){guides=[];draw()});
+$('drawBase').addEventListener('click',function(){traceEdge(false)});
+$('drawHeight').addEventListener('click',function(){traceEdge(true)});
 $('help').addEventListener('change',function(){show=this.checked;draw()});
 $('showAnswer').addEventListener('click',function(){show=!show;$('help').checked=show;draw()});
 $('reset').addEventListener('click',function(){clearResponse();refresh()});
