@@ -25,6 +25,17 @@ jobs:
           gradle-version: '8.7'
       - name: Construire l'application
         run: gradle --no-daemon assembleDebug
+      - name: Signer avec APKSigner pour Android 11 (V1 et V2)
+        run: |
+          "$ANDROID_HOME/build-tools/35.0.0/apksigner" sign \
+            --ks "$HOME/.android/debug.keystore" \
+            --ks-key-alias androiddebugkey \
+            --ks-pass pass:android --key-pass pass:android \
+            --v1-signing-enabled true --v2-signing-enabled true --v3-signing-enabled false \
+            --out app/build/outputs/apk/debug/app-debug-dual.apk \
+            app/build/outputs/apk/debug/app-debug.apk
+          mv app/build/outputs/apk/debug/app-debug-dual.apk \
+             app/build/outputs/apk/debug/app-debug.apk
       - name: Vérifier les signatures et la compatibilité Android 11
         run: |
           "$ANDROID_HOME/build-tools/35.0.0/apksigner" verify \
