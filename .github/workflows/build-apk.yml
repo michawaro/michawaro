@@ -27,8 +27,14 @@ jobs:
         run: gradle --no-daemon assembleDebug
       - name: Signer avec APKSigner pour Android 11 (V1 et V2)
         run: |
+          # Test-key generated in CI; user has not installed earlier builds.
+          keytool -genkeypair -noprompt \
+            -keystore "$RUNNER_TEMP/sfr-test.jks" \
+            -alias androiddebugkey -keyalg RSA -keysize 2048 \
+            -validity 3650 -storepass android -keypass android \
+            -dname "CN=SFR Telecommande Express Test,O=Application Test,C=FR"
           "$ANDROID_HOME/build-tools/35.0.0/apksigner" sign \
-            --ks "$HOME/.android/debug.keystore" \
+            --ks "$RUNNER_TEMP/sfr-test.jks" \
             --ks-key-alias androiddebugkey \
             --ks-pass pass:android --key-pass pass:android \
             --v1-signing-enabled true --v2-signing-enabled true --v3-signing-enabled false \
