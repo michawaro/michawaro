@@ -25,6 +25,13 @@ jobs:
           gradle-version: '8.7'
       - name: Construire l'application
         run: gradle --no-daemon assembleDebug
+      - name: Vérifier les signatures et la compatibilité Android 11
+        run: |
+          "$ANDROID_HOME/build-tools/35.0.0/apksigner" verify \
+            --min-sdk-version 30 --verbose --print-certs \
+            app/build/outputs/apk/debug/app-debug.apk
+          "$ANDROID_HOME/build-tools/35.0.0/aapt" dump badging \
+            app/build/outputs/apk/debug/app-debug.apk | head -15
       - uses: actions/upload-artifact@v4
         with:
           name: SFR-Telecommande-Express-APK
